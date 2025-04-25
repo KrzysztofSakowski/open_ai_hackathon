@@ -3,7 +3,7 @@ from settings import openai_client
 
 
 async def main() -> None:
-    print(f"Hello World {openai_client}")
+    print("Hello World! The OpenAI client is initialized and ready to use.")
 
 
 if __name__ == "__main__":
