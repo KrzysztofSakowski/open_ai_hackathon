@@ -2,6 +2,7 @@ import asyncio
 import datetime
 
 from pydantic import BaseModel
+from agents import function_tool
 
 
 from settings import openai_client
@@ -16,7 +17,8 @@ class EventModel(BaseModel):
     address: str | None = None
 
 
-async def find_events_for_child(child_age: int = 7, location: str = "Warsaw, Poland") -> EventModel | None:
+@function_tool
+async def find_events_for_child(child_age: int, location: str) -> EventModel | None:
     """
     Searches for events happening tomorrow suitable for a child of a given age,
     optionally filtered by location, using OpenAI's web search tool.

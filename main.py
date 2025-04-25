@@ -7,6 +7,7 @@ import asyncio
 from pydantic import BaseModel
 from tools.generate_lesson_tool import lesson_generator_agent
 from tools.storytime_agent import get_story
+from tools.onboarding_agent import onboard_user, Knowledge
 
 
 from agents import (
@@ -21,6 +22,7 @@ class FinalOutput(BaseModel):
     lesson: str
     reasoning: str
     plan_for_evening: str
+    knowledge: Knowledge
 
 
 parent_assistant_agent = Agent(
@@ -32,7 +34,8 @@ parent_assistant_agent = Agent(
     You can search the web for the latest information on the topic, research on the children development, and the latest trends in children's activities.
     You can also provide information about the latest trends in children's activities and education.
 
-    First, use the tool to gather the preferences of the child and parent.
+    
+    REMEMBER: You should first use onboarding tool to gather the preferences of the child and parent.
     Then, use the information to generate a personalized plan for the evening.
 
     Perfect plan should include:
@@ -44,10 +47,14 @@ parent_assistant_agent = Agent(
 
     Make sure to call generate_lesson_tool to generate a lesson plan based on the user's input, include full lesson plan after: "Lesson".
     Make sure to call get_story to generate a short story based on the user's input.
+    Make sure to call find_events_tool to find events for the child based on the user's input.
+    Make sure to include the reasoning behind your suggestions.
     """,
     output_type=FinalOutput,
     input_guardrails=[],
     tools=[
+        onboard_user,
+        # find_events_for_child,
         lesson_generator_agent.as_tool(
             tool_name="generate_lesson_tool",
             tool_description="Generate a lesson plan based on the user's input",
@@ -61,7 +68,7 @@ parent_assistant_agent = Agent(
 async def main() -> None:
     final_plan = await Runner.run(
         parent_assistant_agent,
-        "Child is 5 years old, and the theme is dinosaurs.",
+        "",
         context=None,
     )
     print("Final plan:")

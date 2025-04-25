@@ -4,7 +4,7 @@ import asyncio
 from dataclasses import dataclass
 from pydantic import BaseModel
 
-from agents import Agent, ItemHelpers, Runner, TResponseInputItem, trace
+from agents import Agent, ItemHelpers, Runner, TResponseInputItem, trace, function_tool
 
 
 class Address(BaseModel):
@@ -23,6 +23,7 @@ class Knowledge(BaseModel):
     address: Address | None = None
     parent: PersonEntry | None = None
     child: PersonEntry | None = None
+    theme: str | None = None
 
 
 class FollowUpQuestion(BaseModel):
@@ -42,29 +43,39 @@ follow_up_question_generator = Agent(
 
 initial_knowledge_builder = Agent(
     name="initial_knowledge_builder",
-    instructions=("Based on description, possibly of a parent and a child, create a initial knowledge base."),
+    instructions=(
+        "Based on description, possibly of a parent and a child, create a initial knowledge base."
+    ),
     output_type=Knowledge,
 )
 
 knowledge_updater = Agent(
     name="knowledge_updater",
-    instructions=("Based on a question, current state, question and answer update the state."),
+    instructions=(
+        "Based on a question, current state, question and answer update the state."
+    ),
     output_type=Knowledge,
 )
 
 
-async def main() -> None:
+@function_tool
+async def onboard_user() -> Knowledge:
     initial_description = input("Tell me something about yourselves: \n  ")
     initial_result = await Runner.run(
         initial_knowledge_builder,
         [{"content": initial_description, "role": "system"}],
     )
-    current_knowledge = Knowledge.model_validate_json(ItemHelpers.text_message_outputs(initial_result.new_items))
+    current_knowledge = Knowledge.model_validate_json(
+        ItemHelpers.text_message_outputs(initial_result.new_items)
+    )
     print("initial: ", current_knowledge)
 
     while True:
         input_items: list[TResponseInputItem] = [
-            {"content": "Current state is: " + current_knowledge.model_dump_json(), "role": "system"}
+            {
+                "content": "Current state is: " + current_knowledge.model_dump_json(),
+                "role": "system",
+            }
         ]
 
         story_outline_result = await Runner.run(
@@ -72,7 +83,9 @@ async def main() -> None:
             input_items,
         )
 
-        latest_outline = ItemHelpers.text_message_outputs(story_outline_result.new_items)
+        latest_outline = ItemHelpers.text_message_outputs(
+            story_outline_result.new_items
+        )
 
         structured = FollowUpQuestion.model_validate_json(latest_outline)
         print(structured)
@@ -83,7 +96,10 @@ async def main() -> None:
         answer = input(structured.follow_up + "\n  ")
 
         updater_input_items: list[TResponseInputItem] = [
-            {"content": "Current state is: " + current_knowledge.model_dump_json(), "role": "system"},
+            {
+                "content": "Current state is: " + current_knowledge.model_dump_json(),
+                "role": "system",
+            },
             {"content": "Question is: " + structured.follow_up, "role": "system"},
             {"content": "Answer to a question is: " + answer, "role": "user"},
         ]
@@ -93,9 +109,13 @@ async def main() -> None:
             updater_input_items,
         )
 
-        current_knowledge = Knowledge.model_validate_json(ItemHelpers.text_message_outputs(updated_result.new_items))
+        current_knowledge = Knowledge.model_validate_json(
+            ItemHelpers.text_message_outputs(updated_result.new_items)
+        )
         print(current_knowledge)
+
+    return current_knowledge
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(onboard_user())
