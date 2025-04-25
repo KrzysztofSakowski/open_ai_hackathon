@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 
 from pydantic import BaseModel
@@ -35,3 +36,9 @@ async def find_events_for_child(child_age: int = 7, location: str = "Warsaw, Pol
     except Exception as e:
         print(f"An error occurred during the search: {e}")
         return None
+
+
+if __name__ == "__main__":
+    # Run it with python -m tools.event_tool
+    result = asyncio.run(find_events_for_child())
+    print(result)
