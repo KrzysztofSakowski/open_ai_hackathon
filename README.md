@@ -40,7 +40,12 @@ This document describes how to set up and run the project.
     pip install -r requirements.txt
     ```
 
-5.  **Run the program:**
+5.  **Install pre-commit hooks:**
+    ```bash
+    python -m pre-commit install
+    ```
+
+6.  **Run the program:**
     ```bash
     python main.py
     ```
