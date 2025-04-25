@@ -1,10 +1,12 @@
 CONVO_DB = {}
 CONVO_ID = 0
 
-from fastapi import FastAPI, HTTPException, Depends, status
-from pydantic import BaseModel
 from typing import List, Optional
+from uuid import uuid4
+
 import uvicorn
+from fastapi import Depends, FastAPI, HTTPException, status
+from pydantic import BaseModel
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -20,8 +22,13 @@ async def start():
 
 
 @app.get("/state")
-async def get_state():
-    return {}
+async def get_state(convo_id: uuid4) -> str:
+    convo = CONVO_DB.get(str(convo_id))
+    if convo is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Conversation with ID {convo_id} not found"
+        )
+    return convo.from_system_to_user
 
 
 @app.post("/message")
