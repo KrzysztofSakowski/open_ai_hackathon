@@ -46,7 +46,7 @@ initial_knowledge_builder = Agent(
     output_type=Knowledge,
 )
 
-initial_knowledge_builder = Agent(
+knowledge_updater = Agent(
     name="knowledge_updater",
     instructions=("Based on a question, current state, question and answer update the state."),
     output_type=Knowledge,
@@ -89,7 +89,7 @@ async def main() -> None:
         ]
 
         updated_result = await Runner.run(
-            initial_knowledge_builder,
+            knowledge_updater,
             updater_input_items,
         )
 
