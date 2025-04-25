@@ -1,0 +1,101 @@
+from __future__ import annotations
+
+import asyncio
+from dataclasses import dataclass
+from pydantic import BaseModel
+
+from agents import Agent, ItemHelpers, Runner, TResponseInputItem, trace
+
+
+class Address(BaseModel):
+    country: str | None
+    city: str | None
+
+
+class PersonEntry(BaseModel):
+    name: str | None
+    age: int | None
+    likes: list[str]
+    dislikes: list[str]
+
+
+class Knowledge(BaseModel):
+    address: Address | None = None
+    parent: PersonEntry | None = None
+    child: PersonEntry | None = None
+
+
+class FollowUpQuestion(BaseModel):
+    follow_up: str | None
+
+
+follow_up_question_generator = Agent(
+    name="question_generator",
+    instructions=(
+        "You want to generate a good initial state for generating stories for a child. We need information about both parent and a child. "
+        "For each person, we need some information about likes, dislikes, age. We do not want to have "
+        "any holes in the structure, so make sure every field is there, including address, parent information and child information. Ask only one question at once. Do not mix personal details with interests - ask separate questions for them. "
+        "There is single child. If you have no follow up question return nothing in the structure. When you ask for address, be specific that you are intersted only in city and country, without specific address."
+    ),
+    output_type=FollowUpQuestion,
+)
+
+initial_knowledge_builder = Agent(
+    name="initial_knowledge_builder",
+    instructions=("Based on description, possibly of a parent and a child, create a initial knowledge base."),
+    output_type=Knowledge,
+)
+
+initial_knowledge_builder = Agent(
+    name="knowledge_updater",
+    instructions=("Based on a question, current state, question and answer update the state."),
+    output_type=Knowledge,
+)
+
+
+async def main() -> None:
+    initial_description = input("Tell me something about yourselves: \n  ")
+    initial_result = await Runner.run(
+        initial_knowledge_builder,
+        [{"content": initial_description, "role": "system"}],
+    )
+    current_knowledge = Knowledge.model_validate_json(ItemHelpers.text_message_outputs(initial_result.new_items))
+    print("initial: ", current_knowledge)
+
+    while True:
+        input_items: list[TResponseInputItem] = [
+            {"content": "Current state is: " + current_knowledge.model_dump_json(), "role": "system"}
+        ]
+
+        story_outline_result = await Runner.run(
+            follow_up_question_generator,
+            input_items,
+        )
+
+        latest_outline = ItemHelpers.text_message_outputs(story_outline_result.new_items)
+
+        structured = FollowUpQuestion.model_validate_json(latest_outline)
+        print(structured)
+
+        if structured.follow_up is None or structured.follow_up == "":
+            break
+
+        answer = input(structured.follow_up + "\n  ")
+
+        updater_input_items: list[TResponseInputItem] = [
+            {"content": "Current state is: " + current_knowledge.model_dump_json(), "role": "system"},
+            {"content": "Question is: " + structured.follow_up, "role": "system"},
+            {"content": "Answer to a question is: " + answer, "role": "user"},
+        ]
+
+        updated_result = await Runner.run(
+            initial_knowledge_builder,
+            updater_input_items,
+        )
+
+        current_knowledge = Knowledge.model_validate_json(ItemHelpers.text_message_outputs(updated_result.new_items))
+        print(current_knowledge)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
