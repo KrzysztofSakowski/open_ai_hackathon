@@ -1,9 +1,8 @@
 import asyncio
 import datetime
 
-from pydantic import BaseModel
 from agents import function_tool
-
+from pydantic import BaseModel
 
 from settings import openai_client
 
