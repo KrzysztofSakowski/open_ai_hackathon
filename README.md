@@ -27,12 +27,12 @@ This document describes how to set up and run the project.
 3.  **Set up environment variables:**
     Copy the example environment file:
     ```bash
-    cp env.example .env
+    cp .env.example .env
     ```
     Then, open the `.env` file and add your API key:
     ```
     # .env
-    API_KEY=YOUR_API_KEY_HERE
+    OPENAI_API_KEY=YOUR_API_KEY_HERE
     ```
 
 4.  **Install dependencies:**
