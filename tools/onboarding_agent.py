@@ -35,7 +35,7 @@ follow_up_question_generator = Agent(
         "You want to generate a good initial state for generating stories for a child. We need information about both parent and a child. "
         "For each person, we need some information about likes, dislikes, age. We do not want to have "
         "any holes in the structure, so make sure every field is there, including address, parent information and child information. Ask only one question at once. Do not mix personal details with interests - ask separate questions for them. "
-        "There is single child. If you have no follow up question return nothing in the structure. When you ask for address, be specific that you are intersted only in city and country, without specific address."
+        "There is single child. If you have no follow up question return nothing in the structure. When you ask for address, be specific that you are interested only in city and country, without specific address."
     ),
     output_type=FollowUpQuestion,
 )
