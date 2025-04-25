@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 from pydantic import BaseModel
+from api import post_message, wait_for_user_message
 
 from agents import Agent, ItemHelpers, Runner, TResponseInputItem, trace, function_tool
 
@@ -59,7 +60,7 @@ knowledge_updater = Agent(
 
 
 @function_tool
-async def onboard_user() -> Knowledge:
+async def onboard_user(wrapper) -> Knowledge:
     initial_description = input("Tell me something about yourselves: \n  ")
     initial_result = await Runner.run(
         initial_knowledge_builder,
@@ -93,7 +94,8 @@ async def onboard_user() -> Knowledge:
         if structured.follow_up is None or structured.follow_up == "":
             break
 
-        answer = input(structured.follow_up + "\n  ")
+        post_message(wrapper.conversation_id, structured.follow_up)
+        answer = await wait_for_user_message(wrapper.conversation_id)
 
         updater_input_items: list[TResponseInputItem] = [
             {
