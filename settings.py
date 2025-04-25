@@ -1,7 +1,7 @@
 from typing import Self
 from pydantic import BaseModel
 from dotenv import dotenv_values
-
+from openai import AsyncOpenAI
 
 class EnvSettings(BaseModel):
     """
@@ -18,3 +18,7 @@ class EnvSettings(BaseModel):
 
 
 env_settings = EnvSettings.load()
+
+openai_client = AsyncOpenAI(
+    api_key=env_settings.openai_api_key
+)

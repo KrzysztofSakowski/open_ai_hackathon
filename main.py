@@ -1,8 +1,9 @@
 import asyncio
+from settings import openai_client
 
 
 async def main() -> None:
-    print("Hello World")
+    print(f"Hello World {openai_client}")
 
 
 if __name__ == "__main__":
