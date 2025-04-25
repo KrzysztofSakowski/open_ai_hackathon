@@ -2,14 +2,20 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0 # Use the latest stable version
+    rev: v5.0.0 # Use the latest stable version
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
 
 -   repo: https://github.com/psf/black
-    rev: 24.4.2 # Use a recent stable version
+    rev: 25.1.0 # Use a recent stable version
     hooks:
     -   id: black
         args: [--line-length=120]
+
+-   repo: https://github.com/pycqa/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        name: isort (python)
