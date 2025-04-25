@@ -1,5 +1,6 @@
 import asyncio
 from settings import openai_client
+from tools.event_tool import find_events_for_child
 
 import asyncio
 
