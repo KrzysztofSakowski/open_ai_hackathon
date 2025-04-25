@@ -3,8 +3,11 @@ import asyncio
 import uuid
 from fastapi import FastAPI, HTTPException, Depends, status
 from pydantic import BaseModel
+CONVO_DB = {}
+CONVO_ID = 0
+
+import uuid
 from typing import List, Optional
-from uuid import uuid4
 
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -70,7 +73,7 @@ async def wait_for_user_message(convo_id: str):
 
 
 @app.get("/state")
-async def get_state(convo_id: uuid4) -> str:
+async def get_state(convo_id: uuid.UUID) -> str:
     convo = CONVO_DB.get(str(convo_id))
     if convo is None:
         raise HTTPException(
