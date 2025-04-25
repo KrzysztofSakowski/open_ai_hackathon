@@ -71,22 +71,26 @@ async def get_story(theme: str) -> StoryOutput:
 
 
 async def _get_story(theme: str) -> StoryOutput:
-    input_prompt = input(f"Generate a story with the theme: {theme}")
+    input_prompt = f"Generate a story with the theme: {theme}"
 
     # Ensure the entire workflow is a single trace
-    with trace("Deterministic story flow"):
-        # 1. Generate an outline
-        outline_result = await Runner.run(
-            story_outline_agent,
-            input_prompt,
-        )
-        print("Outline generated")
-        # 4. Write the story
-        story_result = await Runner.run(
-            story_agent,
-            outline_result.final_output,
-        )
-        print(f"Story: {story_result.final_output}")
+    # 1. Generate an outline
+    outline_result = await Runner.run(
+        story_outline_agent,
+        input_prompt,
+    )
+    print("Outline generated")
+    # 4. Write the story
+    story_result = await Runner.run(
+        story_agent,
+        outline_result.final_output,
+    )
+    print(f"Story: {story_result.final_output}")
+
+    return StoryOutput(
+        story=story_result.final_output,
+        theme=theme,
+    )
 
 
 story_outline_agent = Agent(
