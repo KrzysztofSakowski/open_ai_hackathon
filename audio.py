@@ -2,10 +2,10 @@ import asyncio
 import base64
 import uuid
 from pathlib import Path
-from retry import exponential_backoff
 
 from openai import AsyncOpenAI
 
+from retry import exponential_backoff
 from tools.storyboard_agent import StoryboardOutput, _get_storyboard
 
 
@@ -15,7 +15,11 @@ async def generate_audio(client: AsyncOpenAI, prompt: str, output_path) -> None:
         model="gpt-4o-mini-tts",
         voice="coral",
         input=prompt,
-        instructions="Speak in a cheerful and positive tone.",
+        instructions="Speak in a cheerful and positive tone. Personality: upbeat, friendly, story tealler."
+        "Tone: Friendly, clear, and reassuring, creating a calm atmosphere and making the listener feel confident and comfortable. "
+        "Pronunciation: Clear, articulate, and steady, ensuring each instruction is easily understood while maintaining a natural, conversational flow. "
+        "Tempo: Speak relatively fast, include brief pauses and after before questions. "
+        "Emotion: Warm and supportive, conveying empathy and care, ensuring the listener feels guided and safe throughout the journey.",
     ) as response:
         await response.stream_to_file(output_path)
 
@@ -41,7 +45,10 @@ async def generate_audio_from_storyboard(story_board: StoryboardOutput) -> None:
             for i, scene in enumerate(story_board.narration)
         ]
 
-    return [str(output_dir / f"audio_{i}.mp3") for i, scene in enumerate(story_board.narration)]
+    return [
+        str(output_dir / f"audio_{i}.mp3")
+        for i, scene in enumerate(story_board.narration)
+    ]
 
 
 async def test_1():
