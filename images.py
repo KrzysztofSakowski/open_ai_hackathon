@@ -1,28 +1,28 @@
+import asyncio
 import base64
+from pathlib import Path
+import uuid
 
 from openai import OpenAI
 
+from tools.storyboard_agent import StoryboardOutput, _get_storyboard # type: ignore
 
-def generate_image(prompt, output_path):
+
+def generate_image(client, prompt, output_path) -> str:
     result = client.images.generate(
-        model="gpt-image-1",
-        prompt=prompt,
-        n=1,
-        size="1024x1024"
+        model="gpt-image-1", prompt=prompt, n=1, size="1024x1024"
     )
     image_base64 = result.data[0].b64_json
     image_bytes = base64.b64decode(image_base64)
     with open(output_path, "wb") as f:
         f.write(image_bytes)
 
+    return output_path
 
-def generate_image_from_img(prompt, image_path, output_path):
+
+def generate_image_from_img(client, prompt, image_path, output_path):
     result = client.images.edit(
-        model="gpt-image-1",
-        image=[
-            open(image_path, "rb")
-        ],
-        prompt=prompt
+        model="gpt-image-1", image=[open(image_path, "rb")], prompt=prompt
     )
     image_base64 = result.data[0].b64_json
     image_bytes = base64.b64decode(image_base64)
@@ -32,13 +32,58 @@ def generate_image_from_img(prompt, image_path, output_path):
         f.write(image_bytes)
 
 
+def generate_image_from_storyboard(client, x: StoryboardOutput):
+    """
+    Generate images from the storyboard output.
+    """
+    unique_id = uuid.uuid4()
+    output_dir = Path("sample_images") / str(unique_id)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-if __name__ == "__main__":    
+    images = []
+    for i, scene in enumerate(x.images):
+        print(f"Generating image {i}")
+
+        image_path = output_dir /f"img_{i}.png"
+        generate_image(client, prompt=scene, output_path=image_path)
+        images.append(image_path)
+    return images
+
+
+async def test_1():
     client = OpenAI()
-    main_character_description = "Create a little girl in the galaxy, she is the main character of the story. She is wearing a pink dress and has long brown hair. She is smiling and looking at the stars."
-    fairy_tale_description = "A little girl from the reference image meets a new friend from another galaxy. She remains the same but in a different pose."
+    storyboard_output = await _get_storyboard(
+        """
+    **Dino Adventures in Rainbow Valley**
 
-    # Generate the first image based on the main character description
-    image_response = generate_image(main_character_description, output_path="sample_images/img_0.png")
-    image_path = "sample_images/img_0.png"
-    image_response = generate_image_from_img(fairy_tale_description, image_path, output_path="sample_images/img_1.png")
+    In the heart of the magical Rainbow Valley, where lush landscapes glimmered and dinosaurs roamed with vibrant colors, lived Trixie, a curious young triceratops with an insatiable thirst for exploration.
+
+    One sunny morning by Crystal Creek, as the water shimmered with hues of the rainbow, Trixie stumbled upon an extraordinary find — a mysterious, sparkling egg. To her astonishment, the egg began to crack and out emerged a tiny, rainbow-feathered pterosaur named Flutter. Their eyes met, and a friendship blossomed instantly.
+
+    Eager to help Flutter find his family, Trixie and her newfound friend set off on an adventure. They traveled through lush forests where the leaves whispered tales of the past and crossed sparkling rivers that sang melodious tunes. 
+
+    Their quest soon led them to more companions: Sammy, a cheerful stegosaurus with a knack for storytelling, and Lila, a clever velociraptor with a lightning-fast mind. Together, they formed an inseparable team, each friend contributing their unique talents.
+
+    The journey wasn't without its challenges. At Windy Gorge, where fierce gusts threatened their progress, Lila devised a clever way to build a bridge using vines and branches. In the Mystical Maze, Sammy's keen sense of direction led them safely through its bewildering paths.
+
+    At last, their perseverance paid off. They reached the majestic Enchanted Cliffs, home to Flutter’s family. The reunion was filled with joy, laughter, and a celebration that reverberated through the valley, with music and dance that echoed under the bright stars.
+
+    Trixie realized the true meaning of friendship and courage, embracing the thrill of adventure. The group promised to reunite and explore even more wonders of Rainbow Valley.
+
+    As the vibrant sunset painted the sky in dazzling colors, the friends lay beneath the twinkling stars, dreaming together of the endless adventures yet to come.
+
+    """
+    )
+    generate_image_from_storyboard(client, storyboard_output)
+
+
+if __name__ == "__main__":
+    asyncio.run(test_1())
+
+    # main_character_description = "Create a little girl in the galaxy, she is the main character of the story. She is wearing a pink dress and has long brown hair. She is smiling and looking at the stars."
+    # fairy_tale_description = "A little girl from the reference image meets a new friend from another galaxy. She remains the same but in a different pose."
+
+    # # Generate the first image based on the main character description
+    # image_response = generate_image(main_character_description, output_path="sample_images/img_0.png")
+    # image_path = "sample_images/img_0.png"
+    # image_response = generate_image_from_img(fairy_tale_description, image_path, output_path="sample_images/img_1.png")
