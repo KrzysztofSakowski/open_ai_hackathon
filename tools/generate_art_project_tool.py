@@ -5,8 +5,8 @@ from agents import Agent, Runner
 art_project_generator_agent = Agent(
     name="art_project_generator_agent",
     instructions="""
-    Your are reposible for generating art project based on a provided user provided theme.
-    It also project is age-appropriate.
+    You are responsible for generating an art project based on a provided user provided theme.
+    It also ensures the project is age-appropriate.
     Provide a list of materials needed for the project.
     """,
     output_type=str,
@@ -17,7 +17,7 @@ art_project_generator_agent = Agent(
 async def get_art_project(context: dict, theme: str):
     story_result = await Runner.run(
         art_project_generator_agent,
-        input=f"Generate a lesson for a child with age={context["age"]} on a following theme={theme}",
+        input=f"Generate an art project for a child with age={context['age']} on a following theme={theme}",
     )
     return story_result.final_output
 

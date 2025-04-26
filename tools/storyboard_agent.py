@@ -2,6 +2,7 @@ import asyncio
 
 from agents import Agent, Runner, function_tool
 from pydantic import BaseModel
+from api import post_message
 
 
 class Scene(BaseModel):
@@ -29,6 +30,7 @@ For each moment, create a scene consisting of:
 
 class StoryboardOutput(BaseModel):
     images: list[str]
+    narration: list[str]
     main_character_description: str
 
 
@@ -62,6 +64,7 @@ For each moment, create a scene with the following structure:
 
     return StoryboardOutput(
         images=[scene.prompt for scene in storyboard_result.final_output.scene],
+        narration=[scene.narration for scene in storyboard_result.final_output.scene],
         main_character_description=storyboard_result.final_output.main_character_description,
     )
 
