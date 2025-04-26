@@ -1,8 +1,11 @@
+import os
+import tempfile
 from main_agent import main_agent
 import asyncio
 import uuid
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, Query, Form, UploadFile
 from pydantic import BaseModel
+
 CONVO_DB = {}
 CONVO_ID = 0
 
@@ -85,13 +88,37 @@ async def get_state(convo_id: uuid.UUID) -> str:
     return None
 
 
-@app.post("/message")
-async def send_message(convo_id: str, message: str):
+from openai import OpenAI
+
+client = OpenAI()
+
+
+@app.post("/message/audio/{convo_id}")
+async def send_message(convo_id: str = Query(), audio: UploadFile = Form()):
     global CONVO_DB
     if convo_id not in CONVO_DB:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Conversation ID not found",
         )
-    CONVO_DB[convo_id].messages_to_user.append(message)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
+        # Write the uploaded file content to the temporary file
+        content = await audio.read()
+        temp_file.write(content)
+        temp_file_path = temp_file.name
+
+    try:
+        # Open the temporary file and send to OpenAI for transcription
+        with open(temp_file_path, "rb") as file:
+            transcription = client.audio.transcriptions.create(
+                model="gpt-4o-transcribe", file=file
+            )
+
+        # Return the transcription result
+        CONVO_DB[convo_id].messages_to_user.append(transcription.text)
+        return {"transcription": transcription.text}
+
+    finally:
+        # Clean up the temporary file
+        os.unlink(temp_file_path)
     return {"message": "Message sent successfully"}
