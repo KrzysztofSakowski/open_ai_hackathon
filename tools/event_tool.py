@@ -5,17 +5,7 @@ from agents import function_tool
 from pydantic import BaseModel
 
 from settings import openai_client
-from tools.onboarding_agent import Knowledge
-
-
-class EventModel(BaseModel):
-    name: str
-    description: str
-    justification: str
-    estimated_cost: str | float | None = None
-    url: str | None = None
-    url_to_book_tickets: str | None = None
-    address: str | None = None
+from models import Knowledge, EventModel
 
 
 @function_tool

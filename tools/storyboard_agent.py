@@ -2,7 +2,6 @@ import asyncio
 
 from agents import Agent, Runner, function_tool
 from pydantic import BaseModel
-from api import post_message
 
 
 class Scene(BaseModel):
