@@ -81,7 +81,10 @@ async def main_agent(convo_id: str) -> None:
     from api import post_message, CONVO_DB
     from api import OutputMessageToUser
 
-    final_output = {**CONVO_DB[convo_id].final_output, **final_plan.final_output.model_dump()}
+    final_output = {
+        **CONVO_DB[convo_id].final_output,
+        **final_plan.final_output.model_dump(),
+    }
     print("Final output:", final_output)
     post_message(convo_id, OutputMessageToUser(final_output=final_output))
     CONVO_DB[convo_id].outputs.append(final_plan.final_output)
@@ -91,4 +94,30 @@ async def main_agent(convo_id: str) -> None:
 
 
 if __name__ == "__main__":
+    from api import CONVO_DB, EntryModel
+    from tools.onboarding_agent import Knowledge, PersonEntry, Address
+
+    CONVO_ID = "test_convo_id"
+    CONVO_DB[CONVO_ID] = EntryModel(
+        messages_to_user=[],
+        messages_to_agent=[],
+        outputs=[],
+        knowledge=Knowledge(
+            address=Address(city="Warsaw", country="Poland"),
+            parent=PersonEntry(
+                name="John Doe",
+                age=34,
+                likes=["cheese", "running"],
+                dislikes=["cats", "loud noises"],
+            ),
+            child=PersonEntry(
+                name="Little Timmy",
+                age=5,
+                likes=["playing", "adventures"],
+                dislikes=["bedtime", "vegetables"],
+            ),
+            theme="A brave little mouse",
+        ),
+        final_output={},
+    )
     asyncio.run(main_agent(convo_id="test_convo_id"))
