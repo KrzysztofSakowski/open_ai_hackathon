@@ -142,7 +142,7 @@ async def get_state(convo_id: str = Path()):
 
         except Exception as e:
             return None
-        return
+
     return None
 
 
@@ -178,4 +178,3 @@ async def send_message(convo_id: str = Path(), audio: UploadFile = Form()):
     finally:
         # Clean up the temporary file
         os.unlink(temp_file_path)
-    return {"message": "Message sent successfully"}
