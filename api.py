@@ -4,15 +4,14 @@ import io
 import os
 import tempfile
 import uuid
+import json
 
 from fastapi import FastAPI, Form, HTTPException, Path, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from models import Address, PersonEntry, Knowledge
-
+from models import Address, PersonEntry, Knowledge, FinalOutput, InteractiveTurnOutput, ConvoInfo
 from settings import env_settings
-from models import FinalOutput
-from typing import Literal
+from typing import Literal, Any
 
 
 class MessageToUser(BaseModel):
@@ -29,14 +28,15 @@ class OutputMessageToUser(MessageToUser):
     final_output: FinalOutput
 
 
-class EntryModel(BaseModel):
+class Conversation(BaseModel):
     messages_to_user: list[MessageToUser]
     messages_to_agent: list[str]
     outputs: list[FinalOutput] = []
-    knowledge: Knowledge
+    knowledge: Knowledge | None = None
+    story_history: list[str] = []
 
 
-CONVO_DB: dict[str, EntryModel] = {}
+CONVO_DB: dict[str, Conversation] = {}
 CONVO_ID = 0
 
 
@@ -73,7 +73,7 @@ async def start(body: StartBody):
         #     detail="Conversation ID already exists",
         # )
 
-    CONVO_DB[CONVO_ID] = EntryModel(messages_to_user=[], messages_to_agent=[])
+    CONVO_DB[CONVO_ID] = Conversation(messages_to_user=[], messages_to_agent=[])
 
     from main_agent import main_agent
 
@@ -209,3 +209,76 @@ async def send_message(convo_id: str = Path(), audio: UploadFile = Form()):
     finally:
         # Clean up the temporary file
         os.unlink(temp_file_path)
+
+
+class InteractiveStoryRequest(BaseModel):
+    choice: str | None = None
+
+
+@app.post("/interactive_story/{convo_id}", response_model=InteractiveTurnOutput)
+async def run_interactive_story_turn(convo_id: str, request: InteractiveStoryRequest) -> InteractiveTurnOutput:
+    from tools.storytime_agent import interactive_story_illustrator_agent
+    from models import InteractiveTurnOutput, ConvoInfo
+    from agents import Runner
+
+    global CONVO_DB
+    if convo_id not in CONVO_DB:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation ID not found",
+        )
+
+    conversation = CONVO_DB[convo_id]
+    story_history = conversation.story_history
+    knowledge = conversation.knowledge
+    user_choice = request.choice
+
+    if not user_choice and not story_history:
+        # First turn, use the theme from knowledge as the initial topic
+        if not knowledge or not knowledge.theme:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot start story: Theme not found in knowledge. Please onboard first.",
+            )
+        chosen_path = f"Topic: {knowledge.theme}"
+    elif not user_choice and story_history:
+        # Subsequent turn but no choice provided
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Choice is required to continue the story.",
+        )
+    else:
+        # Subsequent turn with a choice provided
+        chosen_path = user_choice
+
+    # Prepare input for the agent
+    input_prompt = f"Story History: {'\n\n'.join(story_history)}\n\n" f"Chosen Path: {chosen_path}"
+
+    print(f"Running interactive story agent for {convo_id} with input:\n{input_prompt}")
+
+    # Run the agent
+    try:
+        agent_result = await Runner.run(
+            interactive_story_illustrator_agent, input_prompt, context=ConvoInfo(convo_id=convo_id, existing_convo=True)
+        )
+    except Exception as e:
+        print(f"Error running interactive_story_illustrator_agent: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Agent failed to generate story turn: {e}"
+        )
+
+    if not agent_result or not agent_result.final_output:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Agent did not produce a valid output for the story turn.",
+        )
+
+    # Parse the output
+    turn_output = agent_result.final_output_as(InteractiveTurnOutput)
+
+    # Update history
+    conversation.story_history.append(turn_output.scene_text)
+
+    print(f"Interactive turn complete for {convo_id}. Scene: {turn_output.scene_text[:50]}...")
+
+    return turn_output

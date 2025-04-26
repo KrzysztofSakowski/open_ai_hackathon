@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from pydantic import BaseModel
 from api import AudioMessageToUser, CONVO_DB
-from models import Address, PersonEntry, Knowledge
+from models import Address, PersonEntry, Knowledge, ConvoInfo
 
 from settings import env_settings
 
@@ -15,11 +15,6 @@ from agents import (
     function_tool,
     RunContextWrapper,
 )
-
-
-class ConvoInfo(BaseModel):
-    convo_id: str
-    existing_convo: bool = False
 
 
 class FollowUpQuestion(BaseModel):

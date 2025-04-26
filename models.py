@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Literal, Any
 
 
 class Address(BaseModel):
@@ -52,3 +53,12 @@ class FinalOutput(BaseModel):
     plan_for_evening: str
     knowledge: Knowledge
     event: EventModel | None
+
+
+class ConvoInfo(BaseModel):
+    convo_id: str
+    existing_convo: bool = False
+
+
+class MessageToUser(BaseModel):
+    type: Literal["audio", "output"]
