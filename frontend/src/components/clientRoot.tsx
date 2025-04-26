@@ -9,6 +9,7 @@ import {
 import styles from "./promptScreen.module.css";
 import { useRef, useState } from "react";
 import { IconMicrophone, IconMicrophoneFilled } from "@tabler/icons-react";
+import { StoryScreen } from "./StoryScreen/StoryScreen";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ export function InnerComponent() {
   });
 
   return (
+    // <StoryScreen imageUrl="http://picsum.photos/300/300" story="hello" />
     <PromptScreen question="How are you today? Could you tell me something about yourself?" />
   );
 }
