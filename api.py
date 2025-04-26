@@ -1,9 +1,20 @@
+import base64
+import io
 import os
 import tempfile
 from main_agent import main_agent
 import asyncio
 import uuid
-from fastapi import FastAPI, HTTPException, Depends, status, Query, Form, UploadFile
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    Depends,
+    status,
+    Query,
+    Form,
+    UploadFile,
+    JSONResponse,
+)
 from pydantic import BaseModel
 
 CONVO_DB = {}
@@ -84,7 +95,39 @@ async def get_state(convo_id: uuid.UUID) -> str:
             detail=f"Conversation with ID {convo_id} not found",
         )
     if CONVO_DB[convo_id].messages_to_user:
-        return CONVO_DB[convo_id].messages_to_user.pop(0)
+        msg = CONVO_DB[convo_id].messages_to_user.pop(0)
+        try:
+            # Create a bytes buffer to store the audio
+            buffer = io.BytesIO()
+
+            # Generate speech and stream it to the buffer
+            with client.audio.speech.with_streaming_response.create(
+                model="gpt-4o-mini-tts",
+                voice="coral",
+                input=msg,
+                instructions="Speak in a cheerful and positive tone.",
+            ) as response:
+                # Stream to our buffer instead of a file
+                for chunk in response.iter_bytes():
+                    buffer.write(chunk)
+
+            # Reset buffer position to start
+            buffer.seek(0)
+
+            # Encode the entire audio buffer to base64
+            audio_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+            # Return the base64-encoded audio
+            return JSONResponse(
+                {
+                    "audio_base64": audio_base64,
+                    "format": "mp3",  # OpenAI returns MP3 by default
+                }
+            )
+
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"error": str(e)})
+        return
     return None
 
 
