@@ -36,6 +36,14 @@ class StoryContinuationOutput(BaseModel):
     option2: str
 
 
+class InteractiveTurnOutput(BaseModel):
+    """Output for a single turn of the interactive story + illustration agent."""
+
+    scene_text: str
+    image_paths: list[str]
+    options: StoryContinuationOutput | None  # Holds the *next* scene and options, or None if story ends
+
+
 class FinalOutput(BaseModel):
     story: str | None = None
     story_image_paths: list[str]
@@ -44,4 +52,3 @@ class FinalOutput(BaseModel):
     plan_for_evening: str
     knowledge: Knowledge
     event: EventModel | None
-    interactive_story_start: StoryContinuationOutput | None = None
