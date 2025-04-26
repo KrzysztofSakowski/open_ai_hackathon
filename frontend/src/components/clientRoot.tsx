@@ -16,8 +16,9 @@ import { MapScreen } from "./MapScreen/MapScreen";
 import { PhotoScreen } from "./PhotoScreen/PhotoScreen";
 import { v4 as uuid } from "uuid";
 import { AudioPromptSchema, FinalOutput, FinalOutputSchema } from "./schemas";
+import { ROOT } from "./constants";
+import faked from "./exampleResponse.json";
 
-const ROOT = "http://localhost:8000";
 const queryClient = new QueryClient();
 
 export function ClientRoot() {
@@ -42,6 +43,8 @@ export function InnerComponent() {
   const [state, setAppState] = useState<AppState>({ state: "welcome" });
   const [convoId, setConvoId] = useState<string | null>(null);
   const [output, setOutput] = useState<FinalOutput | null>(null);
+
+  console.log(output);
 
   if (state.state === "welcome") {
     return (
@@ -121,7 +124,8 @@ export function InnerComponent() {
     const storyText = output?.text.storyboard.narration[step];
     return (
       <StoryScreen
-        imageUrl="http://picsum.photos/300"
+        imageUrl={ROOT + "/" + output!.text.story_images.image_paths[step]!}
+        audioUrl={ROOT + "/" + output!.text.story_audio[step]!}
         story={storyText!}
         onNext={() => {
           if (step + 1 < (output?.text.storyboard.narration.length ?? 0)) {
@@ -164,6 +168,7 @@ export function InnerComponent() {
   if (state.state === "menu") {
     return (
       <MenuScreen
+        imageUrl={output!.text.story_images.image_paths[0]}
         onStory={() => setAppState({ state: "story", step: 0 })}
         onActivities={() => setAppState({ state: "activities" })}
         onLesson={() => setAppState({ state: "lesson" })}
