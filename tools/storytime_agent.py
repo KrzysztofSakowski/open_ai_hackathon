@@ -13,6 +13,8 @@ from agents import (
 )
 from tools.onboarding_agent import Knowledge, PersonEntry, Address
 from api import post_message
+from models import ConvoInfo
+from tools.storyboard_agent import _get_storyboard
 
 
 class ViolentStoryOutput(BaseModel):
@@ -67,11 +69,11 @@ class StoryOutput(BaseModel):
 
 
 @function_tool
-async def get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
-    return await _get_story(knowledge, theme)
+async def get_story(wrapper: RunContextWrapper[ConvoInfo], knowledge: Knowledge, theme: str) -> StoryOutput:
+    return await _get_story(wrapper, knowledge, theme)
 
 
-async def _get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
+async def _get_story(wrapper: RunContextWrapper[ConvoInfo], knowledge: Knowledge, theme: str) -> StoryOutput:
     input_prompt = f"""
     Here is some helpful data: {knowledge.model_dump_json()}.
     Please make sure that story incorporates that knowledge.
@@ -92,6 +94,9 @@ async def _get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
         outline_result.final_output,
     )
     print(f"Story: {story_result.final_output}")
+
+    storyboard_output = await _get_storyboard(wrapper, story_result.final_output)
+    print("Storyboard generated: " + storyboard_output.model_dump_json())
 
     return StoryOutput(
         story=story_result.final_output,

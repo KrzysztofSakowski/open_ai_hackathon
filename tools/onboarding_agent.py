@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from pydantic import BaseModel
 from api import AudioMessageToUser, CONVO_DB
-from models import Address, PersonEntry, Knowledge
+from models import Address, PersonEntry, Knowledge, ConvoInfo
 
 from settings import env_settings
 
@@ -15,11 +15,6 @@ from agents import (
     function_tool,
     RunContextWrapper,
 )
-
-
-class ConvoInfo(BaseModel):
-    convo_id: str
-    existing_convo: bool = False
 
 
 class FollowUpQuestion(BaseModel):
@@ -149,6 +144,13 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
         print(current_knowledge)
 
     CONVO_DB[wrapper.context.convo_id].knowledge = current_knowledge
+    from api import add_to_output
+
+    add_to_output(
+        wrapper.context.convo_id,
+        "knowledge",
+        current_knowledge.model_dump_json(),
+    )
     return current_knowledge
 
 
