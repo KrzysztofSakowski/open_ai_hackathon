@@ -10,7 +10,6 @@ from agents import (
     RunContextWrapper,
     TResponseInputItem,
     GuardrailFunctionOutput,
-    trace,
 )
 
 
@@ -31,7 +30,7 @@ async def violent_story_guardrail(
     context: RunContextWrapper[None],
     agent: Agent,
     input: str | list[TResponseInputItem],
-) -> ViolentStoryOutput:
+) -> GuardrailFunctionOutput:
     """This is an input guardrail function, which happens to call an agent to check if the input
     is a violent story request.
     """

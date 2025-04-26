@@ -1,7 +1,6 @@
 import asyncio
 
 from agents import Agent, Runner, WebSearchTool
-from pydantic import BaseModel
 
 lesson_generator_agent = Agent(
     name="lesson_agent",
