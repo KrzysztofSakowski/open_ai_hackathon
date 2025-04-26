@@ -81,7 +81,7 @@ async def main_agent(convo_id: str) -> None:
     from api import post_message, CONVO_DB
     from api import OutputMessageToUser
 
-    final_output = json.dumps({**CONVO_DB[convo_id].final_output, **final_plan.final_output.model_dump()})
+    final_output = {**CONVO_DB[convo_id].final_output, **final_plan.final_output.model_dump()}
     print("Final output:", final_output)
     post_message(convo_id, OutputMessageToUser(final_output=final_output))
     CONVO_DB[convo_id].outputs.append(final_plan.final_output)

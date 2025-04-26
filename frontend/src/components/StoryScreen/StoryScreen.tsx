@@ -11,8 +11,6 @@ export interface StoryScreenProps {
 }
 
 export function StoryScreen({ story, imageUrl, onNext }: StoryScreenProps) {
-  const [flip] = useState(story.length % 2 === 0);
-
   const elements = [
     <div key="image" className={styles.centeredCell}>
       <img className={styles.image} src={imageUrl} />
@@ -22,7 +20,7 @@ export function StoryScreen({ story, imageUrl, onNext }: StoryScreenProps) {
     </div>,
   ];
 
-  if (flip) {
+  if (story.length % 2 === 0) {
     elements.reverse();
   }
 

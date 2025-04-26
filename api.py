@@ -27,7 +27,7 @@ class AudioMessageToUser(MessageToUser):
 
 class OutputMessageToUser(MessageToUser):
     type: str = "output"
-    final_output: str
+    final_output: dict
 
 
 class EntryModel(BaseModel):
