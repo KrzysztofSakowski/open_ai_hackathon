@@ -7,7 +7,7 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import styles from "./promptScreen.module.css";
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import { IconMicrophone, IconMicrophoneFilled } from "@tabler/icons-react";
 
 const ROOT = "http://localhost:8000";
@@ -126,6 +126,33 @@ export function PromptScreen(props: PromptScreenProps) {
 
   const [convoId, setConvoId] = useState<string | undefined>(undefined);
   const recorder = useRecorder({convoId, setConvoId});
+  useEffect(() => {
+    if (!convoId) return;
+    async function fetchAudio() {
+      try {
+        const response = await fetch(ROOT + "/state/" + convoId, {
+          method: "GET",
+        });
+        if (!response.ok) throw new Error("Audio failed");
+        const data = await response.json();
+        if (!data) return;
+        const audio = data.audio_base64;
+        const audioUrl = "data:audio/webm;base64," + audio;
+        const audioElement = new Audio(audioUrl);
+
+        audioElement.play();
+        console.log("Audio played successfully");
+      } catch (error) {
+        console.error("Audio failed", error);
+      }
+    }
+    const interval = setInterval(() => {
+      fetchAudio();
+    }, 1000);
+    return () => {
+      clearInterval(interval);
+    }
+  }, [convoId]);
   return (
     <div>
       <div className={styles.message}>{props.question}</div>

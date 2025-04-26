@@ -74,8 +74,12 @@ knowledge_updater = Agent(
 
 @function_tool
 async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
-    post_message(wrapper.conversation_id, "Tell me something about yourselves:")
-    initial_description = await wait_for_user_message(wrapper.conversation_id)
+    print("Tell me something about yourselves: test")
+    print(wrapper.context.convo_id)
+    post_message(wrapper.context.convo_id, "Tell me something about yourselves:")
+    print("Tell me something about yourselves:")
+    initial_description = await wait_for_user_message(wrapper.context.convo_id)
+    print("initial_description: ", initial_description)
     initial_result = await Runner.run(
         initial_knowledge_builder,
         [{"content": initial_description, "role": "system"}],
@@ -108,8 +112,9 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
         if structured.follow_up is None or structured.follow_up == "":
             break
 
-        post_message(wrapper.conversation_id, structured.follow_up)
-        answer = await wait_for_user_message(wrapper.conversation_id)
+        post_message(wrapper.context.convo_id, structured.follow_up)
+        answer = await wait_for_user_message(wrapper.context.convo_id)
+        print("answer: ", answer)
 
         updater_input_items: list[TResponseInputItem] = [
             {

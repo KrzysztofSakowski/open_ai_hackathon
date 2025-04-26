@@ -4,6 +4,7 @@ import os
 import tempfile
 import asyncio
 import uuid
+from convert_mp3 import convert_webm_to_mp3
 from fastapi import (
     FastAPI,
     HTTPException,
@@ -73,34 +74,42 @@ async def start():
 
 
 def post_message(convo_id: str, message: str):
+    print("Posting message...")
     global CONVO_DB
     if convo_id not in CONVO_DB:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Conversation ID not found",
         )
-
+    print("CONVO_ID: ", convo_id)
     CONVO_DB[convo_id].messages_to_user.append(message)
     return {"message": "Message added successfully"}
 
 
 async def wait_for_user_message(convo_id: str):
+    print("Waiting for user message...")
+    print("CONVO_ID: ", convo_id)
     global CONVO_DB
     if convo_id not in CONVO_DB:
+        print("CONVO_ID not found")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Conversation ID not found",
         )
 
     while True:
+        print("Waiting for user message...")
         if CONVO_DB[convo_id].messages_to_agent:
-            return CONVO_DB[convo_id].messages_to_agent.pop(0)
+            print("User message found")
+            msg = CONVO_DB[convo_id].messages_to_agent.pop(0)
+            print("User message: ", msg)
+            return msg
         await asyncio.sleep(5)
 
 
-@app.get("/state")
-async def get_state(convo_id: uuid.UUID) -> str:
-    convo = CONVO_DB.get(str(convo_id))
+@app.get("/state/{convo_id}")
+async def get_state(convo_id: str = Path()):
+    convo = CONVO_DB.get(convo_id)
     if convo is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -154,7 +163,7 @@ async def send_message(convo_id: str = Path(), audio: UploadFile = Form()):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Conversation ID not found",
         )
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_file:
         # Write the uploaded file content to the temporary file
         content = await audio.read()
         temp_file.write(content)
@@ -167,8 +176,9 @@ async def send_message(convo_id: str = Path(), audio: UploadFile = Form()):
                 model="gpt-4o-transcribe", file=file
             )
 
+        print(transcription.text)
         # Return the transcription result
-        CONVO_DB[convo_id].messages_to_user.append(transcription.text)
+        CONVO_DB[convo_id].messages_to_agent.append(transcription.text)
         return {"transcription": transcription.text}
 
     finally:
