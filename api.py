@@ -141,6 +141,7 @@ async def get_state(convo_id: str = Path()):
             # Return the base64-encoded audio
             return {
                 "audio_base64": audio_base64,
+                "text": msg,
                 "format": "mp3",  # OpenAI returns MP3 by default
             }
 
@@ -172,9 +173,7 @@ async def send_message(convo_id: str = Path(), audio: UploadFile = Form()):
     try:
         # Open the temporary file and send to OpenAI for transcription
         with open(temp_file_path, "rb") as file:
-            transcription = client.audio.transcriptions.create(
-                model="gpt-4o-transcribe", file=file
-            )
+            transcription = client.audio.transcriptions.create(model="gpt-4o-transcribe", file=file)
 
         print(transcription.text)
         # Return the transcription result

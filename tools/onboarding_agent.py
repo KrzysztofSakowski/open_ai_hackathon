@@ -57,17 +57,13 @@ follow_up_question_generator = Agent(
 
 initial_knowledge_builder = Agent(
     name="initial_knowledge_builder",
-    instructions=(
-        "Based on description, possibly of a parent and a child, create a initial knowledge base."
-    ),
+    instructions=("Based on description, possibly of a parent and a child, create a initial knowledge base."),
     output_type=Knowledge,
 )
 
 knowledge_updater = Agent(
     name="knowledge_updater",
-    instructions=(
-        "Based on a question, current state, question and answer update the state."
-    ),
+    instructions=("Based on a question, current state, question and answer update the state."),
     output_type=Knowledge,
 )
 
@@ -76,7 +72,7 @@ knowledge_updater = Agent(
 async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
     print("Tell me something about yourselves: test")
     print(wrapper.context.convo_id)
-    post_message(wrapper.context.convo_id, "Tell me something about yourselves:")
+    post_message(wrapper.context.convo_id, "Tell me something about yourselves.")
     print("Tell me something about yourselves:")
     initial_description = await wait_for_user_message(wrapper.context.convo_id)
     print("initial_description: ", initial_description)
@@ -84,9 +80,7 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
         initial_knowledge_builder,
         [{"content": initial_description, "role": "system"}],
     )
-    current_knowledge = Knowledge.model_validate_json(
-        ItemHelpers.text_message_outputs(initial_result.new_items)
-    )
+    current_knowledge = Knowledge.model_validate_json(ItemHelpers.text_message_outputs(initial_result.new_items))
     print("initial: ", current_knowledge)
 
     while True:
@@ -102,9 +96,7 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
             input_items,
         )
 
-        latest_outline = ItemHelpers.text_message_outputs(
-            story_outline_result.new_items
-        )
+        latest_outline = ItemHelpers.text_message_outputs(story_outline_result.new_items)
 
         structured = FollowUpQuestion.model_validate_json(latest_outline)
         print(structured)
@@ -130,9 +122,7 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
             updater_input_items,
         )
 
-        current_knowledge = Knowledge.model_validate_json(
-            ItemHelpers.text_message_outputs(updated_result.new_items)
-        )
+        current_knowledge = Knowledge.model_validate_json(ItemHelpers.text_message_outputs(updated_result.new_items))
         print(current_knowledge)
 
     return current_knowledge
