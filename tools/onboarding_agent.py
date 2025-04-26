@@ -51,6 +51,7 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
     # Add imports locally
     from api import wait_for_user_message, post_message
 
+    post_message(wrapper.context.convo_id, "Tell me something about yourselves.")
     print("Tell me something about yourselves:")
     initial_description = await wait_for_user_message(wrapper.context.convo_id)
     # Ensure initial_description is not None

@@ -1,8 +1,9 @@
-openai==1.76.0
-openai-agents==0.0.13
-python-dotenv==1.1.0
-pydantic==2.11.3
-pre-commit==3.7.1
 fastapi>=0.103.1
-uvicorn>=0.23.2
+openai-agents==0.0.13
+openai==1.76.0
+pre-commit==3.7.1
+pydantic==2.11.3
+python-dotenv==1.1.0
 python-multipart>=0.0.6
+runwayml==3.0.3
+uvicorn>=0.23.2
