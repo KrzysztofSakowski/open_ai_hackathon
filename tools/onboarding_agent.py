@@ -3,8 +3,22 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 from pydantic import BaseModel
+from api import post_message, wait_for_user_message
 
-from agents import Agent, ItemHelpers, Runner, TResponseInputItem, trace, function_tool
+from agents import (
+    Agent,
+    ItemHelpers,
+    Runner,
+    TResponseInputItem,
+    trace,
+    function_tool,
+    RunContextWrapper,
+)
+
+
+@dataclass
+class ConvoInfo:
+    convo_id: str
 
 
 class Address(BaseModel):
@@ -59,8 +73,13 @@ knowledge_updater = Agent(
 
 
 @function_tool
-async def onboard_user() -> Knowledge:
-    initial_description = input("Tell me something about yourselves: \n  ")
+async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
+    print("Tell me something about yourselves: test")
+    print(wrapper.context.convo_id)
+    post_message(wrapper.context.convo_id, "Tell me something about yourselves:")
+    print("Tell me something about yourselves:")
+    initial_description = await wait_for_user_message(wrapper.context.convo_id)
+    print("initial_description: ", initial_description)
     initial_result = await Runner.run(
         initial_knowledge_builder,
         [{"content": initial_description, "role": "system"}],
@@ -93,7 +112,9 @@ async def onboard_user() -> Knowledge:
         if structured.follow_up is None or structured.follow_up == "":
             break
 
-        answer = input(structured.follow_up + "\n  ")
+        post_message(wrapper.context.convo_id, structured.follow_up)
+        answer = await wait_for_user_message(wrapper.context.convo_id)
+        print("answer: ", answer)
 
         updater_input_items: list[TResponseInputItem] = [
             {

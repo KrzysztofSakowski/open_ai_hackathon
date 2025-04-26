@@ -3,3 +3,6 @@ openai-agents==0.0.13
 python-dotenv==1.1.0
 pydantic==2.11.3
 pre-commit==3.7.1
+fastapi>=0.103.1
+uvicorn>=0.23.2
+python-multipart>=0.0.6
