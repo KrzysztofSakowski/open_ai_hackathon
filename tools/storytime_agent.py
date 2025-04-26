@@ -73,7 +73,7 @@ async def get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
 
 async def _get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
     input_prompt = f"""
-    Here is a helpful data: {knowledge.model_dump_json()}.
+    Here is some helpful data: {knowledge.model_dump_json()}.
     Please make sure that story incorporates that knowledge.
 
     Remember: Generate a story with the theme: {theme}.
