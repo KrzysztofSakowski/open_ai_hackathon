@@ -307,7 +307,63 @@ async def run_interactive_story_turn(convo_id: str, request: InteractiveStoryReq
 
     # Update history
     conversation.story_history.append(turn_output.scene_text)
+    add_to_output(convo_id, "story_turn", turn_output.model_dump())
 
-    print(f"Interactive turn complete for {convo_id}. Scene: {turn_output.scene_text[:50]}...")
 
-    return turn_output
+if __name__ == "__main__":
+    from models import Knowledge, InteractiveTurnOutput
+    import asyncio
+    import uuid
+
+    async def main():
+        # Simulate starting a conversation and getting initial knowledge
+        convo_id = str(uuid.uuid4())
+        theme = "a lost astronaut exploring an alien jungle"
+        knowledge = Knowledge(theme=theme)
+        CONVO_DB[convo_id] = Conversation(knowledge=knowledge)
+        print(f"--- Starting Story Simulation (ID: {convo_id}) ---")
+        print(f"Theme: {theme}\n")
+
+        current_choice = None
+        num_turns = 3
+
+        for turn in range(num_turns):
+            print(f"--- Turn {turn + 1} ---")
+            request = InteractiveStoryRequest(choice=current_choice)
+            try:
+                await run_interactive_story_turn(convo_id, request)
+            except HTTPException as e:
+                print(f"API Error: {e.detail}")
+                break
+            except Exception as e:
+                print(f"Unexpected Error: {e}")
+                break
+
+            # Retrieve the latest output from the conversation
+            if CONVO_DB[convo_id].outputs:
+                latest_output_dict = CONVO_DB[convo_id].outputs[-1]["item"]
+                # Ensure it's the correct output type before parsing
+                if "scene_text" in latest_output_dict:  # Basic check for story output
+                    turn_output = InteractiveTurnOutput(**latest_output_dict)
+                    print(f"Scene:\n{turn_output.scene_text}\n")
+                    print(f"Options:")
+                    print(f"1. {turn_output.option_1}")
+                    print(f"2. {turn_output.option_2}\n")
+
+                    # Simulate choosing the first option for the next turn
+                    current_choice = turn_output.option_1
+                else:
+                    print("Latest output was not a story turn.")
+                    break
+            else:
+                print("No output generated for this turn.")
+                break
+
+            # Prevent infinite loop if no choice is made (shouldn't happen with simulation)
+            if not current_choice:
+                print("Stopping simulation as no choice was made.")
+                break
+
+        print("--- Story Simulation Ended ---")
+
+    asyncio.run(main())

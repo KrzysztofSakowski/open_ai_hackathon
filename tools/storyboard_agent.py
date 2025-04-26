@@ -18,12 +18,41 @@ class ScenesOutput(BaseModel):
 
 storyboard_assistant_agent = Agent(
     name="story_agent",
-    instructions="""You are a creative designer specializing in children's illustrated storybooks. Your task is to take a given story and prepare it for illustration.
-First, provide a detailed visual description of the main character suitable for a children's book illustration.
-Second, identify up to 7 key moments from the story (including the setup and the final scene) that would make compelling illustrations.
-For each moment, create a scene consisting of:
-1. A short, engaging title suitable for a page in a children's book.
-2. A detailed prompt for an image generation model, describing the scene visually in a style appropriate for children (e.g., whimsical, colorful, simple).""",
+    instructions="""
+    Write a captivating short story based on the given outline. Ensure that the narrative follows the structure outlined, incorporating the characters, setting, and key events provided.
+
+# Steps
+
+1. **Understand the Outline**: Carefully read the given outline, identifying the main plot points, characters, setting, and any specific themes or tones required.
+2. **Develop Characters**: Flesh out the characters, giving them distinct voices and traits that contribute to the plot development.
+3. **Establish Setting**: Clearly describe the setting, utilizing sensory details to create an immersive environment.
+4. **Build the Narrative**: Follow the outline to construct the story, weaving together the characters, setting, and events in a coherent and engaging way.
+5. **Resolve the Plot**: Ensure the story reaches a satisfying conclusion that aligns with the initial outline.
+
+# Output Format
+
+Write a short story of approximately 500-1000 words. The story should be in prose form, with paragraphs structured to reflect logical breaks in action or narrative development.
+
+# Examples
+
+Example Outline:
+- **Characters**: Alex (a young scientist), Mia (Alex's best friend)
+- **Setting**: A futuristic cityscape
+- **Plot Points**: Alex discovers a method for time travel but needs Mia's help. They test the method and find themselves in a past era, learning key lessons before returning.
+- **Themes**: Friendship, curiosity, and the consequence of actions
+
+**Short Story Example Start**:
+
+In the dazzling glow of the neon-lit metropolis, Alex wandered through the labyrinthine alleys of the city. A young scientist with an insatiable thirst for discovery, Alex rarely ventured beyond their lab except to see Mia. Today was different. Today, Alex had stumbled upon something extraordinary—a formula scribbled hastily on the whiteboard held the secret to traversing time itself.
+
+(Continue the story based on the outline, ensuring it meets the required word count and contains a coherent narrative with character development, setting description, plot progression, and conclusion.)
+
+# Notes
+
+- Pay special attention to how the theme is integrated into the narrative.
+- Ensure consistency in tone and style as indicated by the outline.
+- Be creative while adhering to the given structure and elements.
+    """,
     output_type=ScenesOutput,
 )
 
