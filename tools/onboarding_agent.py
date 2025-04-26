@@ -71,7 +71,7 @@ knowledge_updater = Agent(
 async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
     print("Tell me something about yourselves: test")
     print(wrapper.context.convo_id)
-    post_message(wrapper.context.convo_id, "Tell me something about yourselves:")
+    post_message(wrapper.context.convo_id, "Tell me something about yourselves.")
     print("Tell me something about yourselves:")
     initial_description = await wait_for_user_message(wrapper.context.convo_id)
     print("initial_description: ", initial_description)

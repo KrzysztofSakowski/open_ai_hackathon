@@ -1,0 +1,45 @@
+/* Welcome screen styling */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  background-color: #e3f2fd; /* match prompt screen background */
+}
+
+@keyframes invitePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.startButton {
+  background: #6ac3a2; /* mint green */
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 9999px;
+  width: 120px;
+  height: 120px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  animation: invitePulse 2s infinite ease-in-out;
+}
+.startButton:hover {
+  transform: scale(1.05);
+  background: #529f87;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+.startButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(168, 230, 207, 0.5);
+}
