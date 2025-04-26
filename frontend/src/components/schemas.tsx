@@ -29,7 +29,7 @@ export const FinalOutputSchema = z.object({
       image_paths: z.string().array(),
     }),
     story_audio: z.string().array(),
-    story_videos: z.string().array().optional(),
+    story_video: z.string().array().optional(),
     lesson: z.string(),
     reasoning: z.string(),
     plan_for_evening: z.string(),
