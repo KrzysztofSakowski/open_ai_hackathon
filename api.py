@@ -161,7 +161,7 @@ async def get_state(convo_id: str = Path()):
             except Exception as e:
                 return None
         else:
-            return {"type": "output", "text": msg, "format": "text"}
+            return {"type": "output", "text": msg.final_output.model_dump(), "format": "text"}
     return None
 
 
