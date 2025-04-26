@@ -23,17 +23,19 @@ parent_assistant_agent = Agent[ConvoInfo](
     You can search the web for the latest information on the topic, research on the children development, and the latest trends in children's activities.
     You can also provide information about the latest trends in children's activities and education.
 
-   REMEMBER: You should first use onboarding tool to gather the preferences of the child and parent.
+
+    REMEMBER: You should first use onboarding tool to gather the preferences of the child and parent.
     Then, use the information to generate a personalized plan for the evening.
+
     Perfect plan should include:
+
     1. A list of activities that are age-appropriate and engaging.
     2. A list of educational content that is relevant to the child's interests.
     3. A list of games that are fun and interactive.
     4. A list of resources that the parent can use to learn more about the child's interests.
+
     Make sure to call generate_lesson_tool to generate a lesson plan based on the user's input, include full lesson plan after: "Lesson".
-    Make sure to call get_story to generate a short story based on the user's input.
-    Make sure to call get_storyboard to generate story baord based on the story board.
-    Make sure to call generate_image_from_storyboard to generate image based on the story board.
+    Always call get_story to generate a short story based on the user's input.
     Make sure to call find_events_tool to find events for the child based on the user's input.
     Make sure to include the reasoning behind your suggestions.
     """,
@@ -78,7 +80,7 @@ async def main_agent(convo_id: str) -> None:
     print("KNOWLEDGE")
     print(final_plan.final_output.knowledge)
     print("INTERACTIVE")
-    print(final_plan.final_output.interactive_story_start) # Field removed
+    print(final_plan.final_output.interactive_story_start)  # Field removed
 
     print("END OF PLAN")
 
