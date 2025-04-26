@@ -1,4 +1,6 @@
 import uvicorn
+from settings import env_settings
+
 
 if __name__ == "__main__":
     env_settings.load()  # Sanity check env
