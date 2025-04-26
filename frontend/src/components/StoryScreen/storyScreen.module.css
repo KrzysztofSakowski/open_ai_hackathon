@@ -1,4 +1,5 @@
 .grid {
+  position: relative;
   height: 100%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -33,4 +34,41 @@
   padding: 20;
   bottom: 0;
   right: 0;
+}
+
+.nextButton:hover {
+  background: #006400;
+}
+
+/* Audio play button */
+.audioButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  background-color: #0070f3;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-family: var(--font-playpen);
+}
+
+.audioButton:hover {
+  background-color: #005bb5;
+}
+
+/* Pulse animation when audio is playing */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+.audioPlaying {
+  animation: pulse 1.2s infinite ease-in-out;
 }

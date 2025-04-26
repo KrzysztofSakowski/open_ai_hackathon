@@ -125,6 +125,7 @@ export function InnerComponent() {
     return (
       <StoryScreen
         imageUrl={ROOT + "/" + output!.text.story_images.image_paths[step]!}
+        audioUrl={ROOT + "/" + output!.text.story_audio[step]!}
         story={storyText!}
         onNext={() => {
           if (step + 1 < (output?.text.storyboard.narration.length ?? 0)) {
