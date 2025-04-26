@@ -17,7 +17,10 @@ class StoryImageOutput(BaseModel):
 
 
 async def generate_image(client: AsyncOpenAI, prompt: str, output_path: Path) -> None:
-    result = await client.images.generate(model="gpt-image-1", prompt=prompt, n=1, size="1024x1024")
+    print(f"Generating image from {output_path} with prompt: {prompt}")
+    result = await client.images.generate(
+        model="gpt-image-1", prompt=prompt, n=1, size="1024x1024"
+    )
     if not result.data:
         raise ValueError("No image data returned from OpenAI API")
 
@@ -28,10 +31,14 @@ async def generate_image(client: AsyncOpenAI, prompt: str, output_path: Path) ->
     output_path.write_bytes(image_bytes)
 
 
-async def generate_image_from_img(client: AsyncOpenAI, prompt: str, image_path: Path, output_path: Path) -> None:
+async def generate_image_from_img(
+    client: AsyncOpenAI, prompt: str, image_path: Path, output_path: Path
+) -> None:
     assert image_path.exists(), f"Image {image_path} does not exist."
-
-    result = await client.images.edit(model="gpt-image-1", image=[open(image_path, "rb")], prompt=prompt)
+    print(f"Generating image from {output_path} with prompt: {prompt}")
+    result = await client.images.edit(
+        model="gpt-image-1", image=[open(image_path, "rb")], prompt=prompt
+    )
     if not result.data:
         raise ValueError("No image data returned from OpenAI API")
 
@@ -43,14 +50,20 @@ async def generate_image_from_img(client: AsyncOpenAI, prompt: str, image_path: 
 
 
 @function_tool
-async def generate_image_from_storyboard(story_board: StoryboardOutput) -> StoryImageOutput:
+async def generate_image_from_storyboard(
+    story_board: StoryboardOutput,
+) -> StoryImageOutput:
     return await _generate_image_from_storyboard(story_board)
 
 
-async def _generate_image_from_storyboard(story_board: StoryboardOutput) -> StoryImageOutput:
+async def _generate_image_from_storyboard(
+    story_board: StoryboardOutput,
+) -> StoryImageOutput:
     """Generate images from the storyboard output."""
     client = AsyncOpenAI()
-    output_dir = Path("static/sample_images") / datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    output_dir = Path("static/sample_images") / datetime.datetime.now().strftime(
+        "%Y%m%d%H%M%S"
+    )
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Generating images in {output_dir}")
@@ -81,7 +94,9 @@ async def _generate_image_from_storyboard(story_board: StoryboardOutput) -> Stor
     print(f"Time taken: {(time.time() - start_time) / 60} minutes")
 
     return StoryImageOutput(
-        image_paths=[str(output_dir / f"img_{i}.png") for i in range(len(story_board.images) + 1)],
+        image_paths=[
+            str(output_dir / f"img_{i}.png") for i in range(len(story_board.images) + 1)
+        ],
     )
 
 

@@ -35,6 +35,8 @@ async def generate_audio_from_storyboard(client: AsyncOpenAI, story_board: Story
             for i, scene in enumerate(story_board.narration)
         ]
 
+    return [str(output_dir / f"audio_{i}.mp3") for i, scene in enumerate(story_board.narration)]
+
 
 async def test_1():
     client = AsyncOpenAI()

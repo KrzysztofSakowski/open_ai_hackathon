@@ -107,19 +107,24 @@ async def _get_story(wrapper: RunContextWrapper[ConvoInfo], knowledge: Knowledge
         storyboard_output,
     )
     print("Generating audio...")
-    audio_output = await generate_audio_from_storyboard(storyboard_output)
+    from openai import AsyncOpenAI
+
+    client = AsyncOpenAI()
+    audio_output = await generate_audio_from_storyboard(client, storyboard_output)
+    print(images_output)
+    print(audio_output)
 
     from api import add_to_output
 
     add_to_output(
         wrapper.context.convo_id,
         "story_images",
-        json.dumps(images_output),
+        images_output.model_dump(),
     )
     add_to_output(
         wrapper.context.convo_id,
         "story_audio",
-        json.dumps(audio_output),
+        audio_output,
     )
 
     return StoryOutput(
