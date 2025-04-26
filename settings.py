@@ -1,7 +1,8 @@
 from typing import Self
-from pydantic import BaseModel
+
 from dotenv import dotenv_values
 from openai import AsyncOpenAI
+from pydantic import BaseModel
 
 
 class EnvSettings(BaseModel):

@@ -1,33 +1,15 @@
+import asyncio
 import base64
 import io
 import os
 import tempfile
-import asyncio
 import uuid
+
+from fastapi import FastAPI, Form, HTTPException, Path, UploadFile, status
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
 from settings import env_settings
-from convert_mp3 import convert_webm_to_mp3
-from fastapi import (
-    FastAPI,
-    HTTPException,
-    Depends,
-    status,
-    Path,
-    Form,
-    UploadFile,
-)
-from pydantic import BaseModel
-
-CONVO_DB = {}
-CONVO_ID = 0
-
-import uuid
-from typing import List, Optional
-
-import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, status
-from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.cors import CORSMiddleware
 
 
 class EntryModel(BaseModel):
@@ -36,6 +18,9 @@ class EntryModel(BaseModel):
 
 
 CONVO_DB: dict[str, EntryModel] = {}
+CONVO_ID = 0
+
+
 # Initialize FastAPI app
 app = FastAPI(
     title="My FastAPI Application",
@@ -157,7 +142,7 @@ async def get_state(convo_id: str = Path()):
 
         except Exception as e:
             return None
-        return
+
     return None
 
 
@@ -193,4 +178,3 @@ async def send_message(convo_id: str = Path(), audio: UploadFile = Form()):
     finally:
         # Clean up the temporary file
         os.unlink(temp_file_path)
-    return {"message": "Message sent successfully"}
