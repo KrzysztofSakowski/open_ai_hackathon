@@ -7,10 +7,12 @@ from pydantic import BaseModel
 from images import generate_image_from_storyboard
 from tools.event_tool import EventModel, find_events_for_child
 from tools.generate_lesson_tool import lesson_generator_agent
-from tools.onboarding_agent import ConvoInfo, Knowledge, onboard_user
+from tools.onboarding_agent import onboard_user, Knowledge
 from tools.storyboard_agent import get_storyboard
-from tools.storytime_agent import get_story
-from models import FinalOutput
+from tools.storytime_agent import get_story, StoryContinuationOutput
+from models import FinalOutput, ConvoInfo
+from settings import env_settings
+from api import wait_for_user_message
 
 
 parent_assistant_agent = Agent[ConvoInfo](
@@ -78,6 +80,9 @@ async def main_agent(convo_id: str) -> None:
     print(final_plan.final_output.knowledge)
     print("END OF PLAN")
 
+    if env_settings.run_in_cli:
+        return
+
     from api import post_message, CONVO_DB
     from api import OutputMessageToUser
 
@@ -94,11 +99,13 @@ async def main_agent(convo_id: str) -> None:
 
 
 if __name__ == "__main__":
-    from api import CONVO_DB, EntryModel
+    env_settings.load()  # Sanity check env
+
+    from api import CONVO_DB, Conversation
     from tools.onboarding_agent import Knowledge, PersonEntry, Address
 
     CONVO_ID = "test_convo_id"
-    CONVO_DB[CONVO_ID] = EntryModel(
+    CONVO_DB[CONVO_ID] = Conversation(
         messages_to_user=[],
         messages_to_agent=[],
         outputs=[],

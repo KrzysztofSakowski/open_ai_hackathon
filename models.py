@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Literal, Any
 
 
 class Address(BaseModel):
@@ -30,9 +31,24 @@ class EventModel(BaseModel):
     address: str | None = None
 
 
+class StoryContinuationOutput(BaseModel):
+    next_scene: str
+    option1: str
+    option2: str
+
+
+class InteractiveTurnOutput(BaseModel):
+    """Output for a single turn of the interactive story + illustration agent."""
+
+    scene_text: str
+    image_paths: list[str]
+    options: StoryContinuationOutput | None  # Holds the *next* scene and options, or None if story ends
+
+
 class ConvoInfo(BaseModel):
     convo_id: str
     existing_convo: bool = False
+
 
 
 class FinalOutput(BaseModel):
@@ -43,3 +59,12 @@ class FinalOutput(BaseModel):
     plan_for_evening: str
     knowledge: Knowledge
     event: EventModel | None
+
+
+class ConvoInfo(BaseModel):
+    convo_id: str
+    existing_convo: bool = False
+
+
+class MessageToUser(BaseModel):
+    type: Literal["audio", "output"]
