@@ -59,7 +59,6 @@ async def generate_image_from_storyboard(client: AsyncOpenAI, story_board: Story
 
 
 async def test_1():
-    AsyncOpenAI
     client = AsyncOpenAI()
     storyboard_output = await _get_storyboard(
         """
