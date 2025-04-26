@@ -2,6 +2,7 @@ import asyncio
 
 from agents import Agent, Runner, function_tool
 from pydantic import BaseModel
+from api import post_message
 
 
 class Scene(BaseModel):
@@ -24,6 +25,7 @@ storyboard_assistant_agent = Agent(
 
 class StoryboardOutput(BaseModel):
     images: list[str]
+    narration: list[str]
     main_character_description: str
 
 
@@ -34,6 +36,7 @@ async def get_storyboard(story: str) -> StoryboardOutput:
 
 async def _get_storyboard(theme: str) -> StoryboardOutput:
     input_prompt = f"The story is following: {theme}"
+    # post_message("I'm going to generate a storyboard for the following story")
 
     # Ensure the entire workflow is a single trace
     # 1. Generate an outline
@@ -49,6 +52,7 @@ async def _get_storyboard(theme: str) -> StoryboardOutput:
 
     return StoryboardOutput(
         images=[scene.prompt for scene in storyboard_result.final_output.scene],
+        narration=[scene.narration for scene in storyboard_result.final_output.scene],
         main_character_description=storyboard_result.final_output.main_character_description,
     )
 
