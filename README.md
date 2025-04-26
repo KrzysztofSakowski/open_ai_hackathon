@@ -42,7 +42,7 @@ This document describes how to set up and run the project.
 
 5.  **Install pre-commit hooks:**
     ```bash
-    python -m pre-commit install
+    python -m pre_commit install
     ```
 
 6.  **Run the program:**

@@ -5,7 +5,7 @@ import uuid
 
 from openai import OpenAI
 
-from tools.storyboard_agent import StoryboardOutput, _get_storyboard # type: ignore
+from tools.storyboard_agent import StoryboardOutput, _get_storyboard
 
 
 def generate_image(client, prompt, output_path) -> str:
