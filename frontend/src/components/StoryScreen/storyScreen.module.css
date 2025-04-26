@@ -1,0 +1,29 @@
+.grid {
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 1fr; /* Optional: sets row height */
+  gap: 1rem; /* Optional: space between items */
+  overflow-x: auto; /* Optional: scroll if too wide */
+  white-space: nowrap; /* Optional: prevent wrapping */
+}
+
+.centeredCell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.storyText {
+  font-size: 42px;
+}
+
+.nextButton {
+  position: absolute;
+  border-radius: 20px 0 0 0;
+  background: green;
+  border: none;
+  padding: 20;
+  bottom: 0;
+  right: 0;
+}
