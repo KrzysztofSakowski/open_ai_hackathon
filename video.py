@@ -1,36 +1,41 @@
 # Fairytale agent using OpenAI's GPT-4o model
-import os
 import base64
+import os
 import time
-from runwayml import RunwayML  # Assuming proper import
+from pathlib import Path
 
-def get_client_runway():
+from runwayml import RunwayML
+
+
+def get_client_runway() -> RunwayML:
     api_key = os.getenv("RUNWAY_API_KEY")
     if not api_key:
         raise EnvironmentError("RUNWAY_API_KEY environment variable is not set.")
     return RunwayML(api_key=api_key)
 
-def generate_video(input_image_path, client):
+
+def generate_video(input_image_path: Path, client):
     """Encodes an image and submits a request to generate video."""
     try:
         with open(input_image_path, "rb") as image_file:
             encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
-        
+
         prompt_image = f"data:image/webp;base64,{encoded_image}"
-        
+
         task = client.image_to_video.create(
             model="gen4_turbo",
             prompt_image=prompt_image,
             prompt_text="Follow a main character in a fairytale world.",
             ratio="1280:720",
         )
-        
+
         print(f"Task created with ID: {task.id}")
         return task.id
 
     except Exception as e:
         print(f"Error generating video: {e}")
         return None
+
 
 def check_task_status(task_id, client, timeout=60):
     """Polls task status with a timeout mechanism and returns output URLs."""
@@ -59,23 +64,31 @@ def check_task_status(task_id, client, timeout=60):
     print("Task polling timeout reached.")
     return None
 
-async def main():
+
+def main(images: list[Path]):
     client = get_client_runway()
-    
-    images = [
-        "ec6cf4e6-fcf3-48ad-852e-a00b8ff85655/img_0.png",
-        "ec6cf4e6-fcf3-48ad-852e-a00b8ff85655/img_1.png",
-    ]
-    
+
     list_of_videos = []
-    
+
     for img in images:
+        assert img.exists(), f"Image {img} does not exist."
+
         task_id = generate_video(img, client)  # Get task ID
-        
+        print(f"Task ID: {task_id}")
+
         if task_id:
             video_output = check_task_status(task_id, client)  # Get output URLs
-            
+
             if video_output:
                 list_of_videos.extend(video_output)  # Append URLs
-    
+
     print("Generated videos:", list_of_videos)
+
+
+if __name__ == "__main__":
+    main(
+        images=[
+            Path("sample_images/1fe76004-b7dd-438d-a82b-26687f79eba1/img_0.png"),
+            Path("sample_images/1fe76004-b7dd-438d-a82b-26687f79eba1/img_1.png"),
+        ]
+    )
