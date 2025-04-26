@@ -8,6 +8,7 @@ import uuid
 from fastapi import FastAPI, Form, HTTPException, Path, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from models import Address, PersonEntry, Knowledge
 
 from settings import env_settings
 from models import FinalOutput
@@ -31,6 +32,8 @@ class OutputMessageToUser(MessageToUser):
 class EntryModel(BaseModel):
     messages_to_user: list[MessageToUser]
     messages_to_agent: list[str]
+    outputs: list[FinalOutput] = []
+    knowledge: Knowledge
 
 
 CONVO_DB: dict[str, EntryModel] = {}
@@ -165,7 +168,11 @@ async def get_state(convo_id: str = Path()):
             except Exception as e:
                 return None
         else:
-            return {"type": "output", "text": msg.final_output.model_dump(), "format": "text"}
+            return {
+                "type": "output",
+                "text": msg.final_output.model_dump(),
+                "format": "text",
+            }
     return None
 
 

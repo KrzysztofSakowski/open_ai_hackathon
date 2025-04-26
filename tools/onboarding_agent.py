@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from pydantic import BaseModel
-from api import AudioMessageToUser
+from api import AudioMessageToUser, CONVO_DB
 from models import Address, PersonEntry, Knowledge
 
 from agents import (
@@ -17,6 +17,7 @@ from agents import (
 
 class ConvoInfo(BaseModel):
     convo_id: str
+    existing_convo: bool = False
 
 
 class FollowUpQuestion(BaseModel):
@@ -52,7 +53,13 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
     # Add imports locally
     from api import wait_for_user_message, post_message
 
-    post_message(wrapper.context.convo_id, AudioMessageToUser(audio_message="Tell me something about yourselves."))
+    # if wrapper.context.existing_convo:
+    #     return CONVO_DB[wrapper.context.convo_id].knowledge
+
+    post_message(
+        wrapper.context.convo_id,
+        AudioMessageToUser(audio_message="Tell me something about yourselves."),
+    )
     print("Tell me something about yourselves:")
     initial_description = await wait_for_user_message(wrapper.context.convo_id)
     # Ensure initial_description is not None
@@ -88,7 +95,10 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
         if structured.follow_up is None or structured.follow_up == "":
             break
 
-        post_message(wrapper.context.convo_id, AudioMessageToUser(audio_message=structured.follow_up))
+        post_message(
+            wrapper.context.convo_id,
+            AudioMessageToUser(audio_message=structured.follow_up),
+        )
         answer = await wait_for_user_message(wrapper.context.convo_id)
         # Ensure answer is not None
         if answer is None:
@@ -113,6 +123,7 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
         current_knowledge = Knowledge.model_validate_json(ItemHelpers.text_message_outputs(updated_result.new_items))
         print(current_knowledge)
 
+    CONVO_DB[wrapper.context.convo_id].knowledge = current_knowledge
     return current_knowledge
 
 

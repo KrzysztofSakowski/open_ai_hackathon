@@ -57,10 +57,12 @@ parent_assistant_agent = Agent[ConvoInfo](
 
 
 async def main_agent(convo_id: str) -> None:
+    from api import CONVO_DB
+
     final_plan = await Runner.run(
         parent_assistant_agent,
         "",
-        context=ConvoInfo(convo_id=convo_id),
+        context=ConvoInfo(convo_id=convo_id, existing_convo=convo_id in CONVO_DB),
     )
     print("Final plan:")
     print("STORY")
@@ -79,10 +81,14 @@ async def main_agent(convo_id: str) -> None:
     print(final_plan.final_output.knowledge)
     print("END OF PLAN")
 
-    from api import post_message
+    from api import post_message, CONVO_DB
     from api import OutputMessageToUser
 
     post_message(convo_id, OutputMessageToUser(final_output=final_plan.final_output))
+    CONVO_DB[convo_id].outputs.append(final_plan.final_output)
+
+    print("Final output appended to CONVO_DB for convo_id:", convo_id)
+    print("Main agent finished")
 
 
 if __name__ == "__main__":
