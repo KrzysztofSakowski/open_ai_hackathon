@@ -225,10 +225,10 @@ class Context(BaseModel):
 
 
 if __name__ == "__main__":
-    from api import CONVO_DB, EntryModel
+    from api import CONVO_DB, Conversation, Knowledge, Address, PersonEntry
 
     CONVO_ID = "test_convo_id"
-    CONVO_DB[CONVO_ID] = EntryModel(
+    CONVO_DB[CONVO_ID] = Conversation(
         messages_to_user=[],
         messages_to_agent=[],
         outputs=[],
