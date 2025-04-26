@@ -137,8 +137,7 @@ export function InnerComponent() {
   if (state.state === "activities") {
     return (
       <MapScreen
-        lat={37.7749}
-        lng={-122.4194}
+        event={output!.text.event}
         onNext={() => setAppState({ state: "menu" })}
       />
     );

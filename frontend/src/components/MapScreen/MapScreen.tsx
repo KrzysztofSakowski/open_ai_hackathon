@@ -1,15 +1,14 @@
 import { useCallback } from "react";
 import styles from "./mapScreen.module.css";
 import { IconArrowRight } from "@tabler/icons-react";
+import { FinalOutput } from "../schemas";
 
 export interface MapScreenProps {
-  lat: number;
-  lng: number;
+  event: FinalOutput["text"]["event"];
   onNext: () => void;
-  description?: string;
 }
 
-export function MapScreen({ lat, lng, onNext, description = "Description goes here." }: MapScreenProps) {
+export function MapScreen({ event, onNext }: MapScreenProps) {
   const handleNext = useCallback(() => {
     onNext();
   }, [onNext]);
@@ -22,11 +21,28 @@ export function MapScreen({ lat, lng, onNext, description = "Description goes he
           width="100%"
           height="100%"
           frameBorder="0"
-          src={`https://maps.google.com/maps?q=${lat},${lng}&z=14&output=embed`}
+          src={`https://maps.google.com/maps?q=${encodeURIComponent(
+            event.address
+          )}&z=14&output=embed`}
           allowFullScreen
         />
       </div>
-      <div className={styles.description}>{description}</div>
+      <div className={styles.description}>
+        <div>
+          <h2>{event.name}</h2>
+          <p>{event.description}</p>
+          <p>{event.justification}</p>
+          <p>{event.estimated_cost}</p>
+        </div>
+        <a
+          href={event.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.visitButton}
+        >
+          Visit Website
+        </a>
+      </div>
       <button className={styles.nextButton} onClick={handleNext}>
         <IconArrowRight />
       </button>
