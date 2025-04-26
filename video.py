@@ -37,33 +37,28 @@ def generate_video(input_image_path: Path, client: RunwayML):
         return None
 
 
-def check_task_status(task_id, client: RunwayML, timeout=60):
+def check_task_status(task_id, client: RunwayML):
     """Polls task status with a timeout mechanism and returns output URLs."""
-    start_time = time.time()
+    try:
+        task = client.tasks.retrieve(id=task_id)
+        if task is None or task.status is None:
+            print(f"Task {task_id} not found or status is None.")
+            return None
+        elif task.status == "SUCCEEDED":
+            assert task.output, "Task output is None"
+            print("Task completed!")
+            return [output for output in task.output]
 
-    while time.time() - start_time < timeout:
-        try:
-            task = client.tasks.retrieve(id=task_id)
-            assert task.output is not None, f"Task {task.output} is None."
-
-            if task.status == "SUCCEEDED":
-                print("Task completed!")
-                return [output for output in task.output]
-
-            elif task.status == "FAILED":
-                print("Task failed.")
-                return None
-
-            else:
-                print(f"Task status: {task.status}. Retrying in 10 seconds...")
-                time.sleep(10)
-
-        except Exception as e:
-            print(f"Error checking task status: {e}")
+        elif task.status == "FAILED":
+            print("Task failed.")
             return None
 
-    print("Task polling timeout reached.")
-    return None
+        else:
+            assert False, f"Unexpected task status: {task.status}"
+
+    except Exception as e:
+        print(f"Error checking task status: {e}")
+        return None
 
 
 def generate_videos(images: list[Path]) -> list[str]:
@@ -95,7 +90,8 @@ def generate_videos(images: list[Path]) -> list[str]:
                 print(f"Task {task_id} is not ready yet.")
 
     list_of_videos = list(task_ids.values())
-    print(f"Generated videos: {list_of_videos}")
+    for idx, video in enumerate(list_of_videos, start=1):
+        print(f"Video {idx}: {video}")
 
     return cast(list[str], list_of_videos)
 
