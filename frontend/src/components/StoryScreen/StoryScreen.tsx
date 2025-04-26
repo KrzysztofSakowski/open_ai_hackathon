@@ -7,17 +7,18 @@ import { IconArrowRight } from "@tabler/icons-react";
 export interface StoryScreenProps {
   story: string;
   imageUrl: string;
+  onNext: () => void;
 }
 
-export function StoryScreen(props: StoryScreenProps) {
-  const [flip] = useState(props.story.length % 2 === 0);
+export function StoryScreen({ story, imageUrl, onNext }: StoryScreenProps) {
+  const [flip] = useState(story.length % 2 === 0);
 
   const elements = [
     <div key="image" className={styles.centeredCell}>
-      <img className={styles.image} src={props.imageUrl} />
+      <img className={styles.image} src={imageUrl} />
     </div>,
     <div key="story" className={`${styles.centeredCell} ${styles.storyText}`}>
-      {props.story}
+      {story}
     </div>,
   ];
 
@@ -25,14 +26,14 @@ export function StoryScreen(props: StoryScreenProps) {
     elements.reverse();
   }
 
-  const onNext = useCallback(() => {
-    console.log("onNext");
-  }, []);
+  const handleNext = useCallback(() => {
+    onNext();
+  }, [onNext]);
 
   return (
     <div className={styles.grid}>
       {elements}
-      <button className={styles.nextButton} onClick={onNext}>
+      <button className={styles.nextButton} onClick={handleNext}>
         <IconArrowRight />
       </button>
     </div>
