@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import datetime
 import time
 import uuid
 from pathlib import Path
@@ -49,7 +50,7 @@ async def generate_image_from_storyboard(story_board: StoryboardOutput) -> Story
 async def _generate_image_from_storyboard(story_board: StoryboardOutput) -> StoryImageOutput:
     """Generate images from the storyboard output."""
     client = AsyncOpenAI()
-    output_dir = Path("static/sample_images") / str(uuid.uuid4())
+    output_dir = Path("static/sample_images") / datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Generating images in {output_dir}")
