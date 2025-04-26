@@ -11,6 +11,7 @@ from agents import (
     TResponseInputItem,
     GuardrailFunctionOutput,
 )
+from tools.onboarding_agent import Knowledge, PersonEntry, Address
 from api import post_message
 
 
@@ -66,12 +67,17 @@ class StoryOutput(BaseModel):
 
 
 @function_tool
-async def get_story(theme: str) -> StoryOutput:
-    return await _get_story(theme)
+async def get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
+    return await _get_story(knowledge, theme)
 
 
-async def _get_story(theme: str) -> StoryOutput:
-    input_prompt = f"Generate a story with the theme: {theme}"
+async def _get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
+    input_prompt = f"""
+    Here is some helpful data: {knowledge.model_dump_json()}.
+    Please make sure that story incorporates that knowledge.
+
+    Remember: Generate a story with the theme: {theme}.
+"""
 
     # Ensure the entire workflow is a single trace
     # 1. Generate an outline
@@ -100,4 +106,24 @@ story_outline_agent = Agent(
 
 
 if __name__ == "__main__":
-    asyncio.run(_get_story("A brave little mouse"))
+    asyncio.run(
+        _get_story(
+            Knowledge(
+                address=Address(city="Warsaw", country="Poland"),
+                parent=PersonEntry(
+                    name="John Doe",
+                    age=34,
+                    likes=["cheese", "running"],
+                    dislikes=["cats", "loud noises"],
+                ),
+                child=PersonEntry(
+                    name="Little Timmy",
+                    age=5,
+                    likes=["playing", "adventures"],
+                    dislikes=["bedtime", "vegetables"],
+                ),
+                theme="A brave little mouse",
+            ),
+            "A brave little mouse",
+        ),
+    )
