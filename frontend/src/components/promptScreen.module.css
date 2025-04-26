@@ -1,18 +1,31 @@
+/* Prompt message styling */
 .message {
-  font-size: 42px;
-  text-align: center;
-  padding: 24px;
-}
-
-.recordContainer {
-  padding-top: 80px;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  font-size: 1.8rem;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 24px;
+  color: #333333;
 }
 
+/* Recording button container */
+.recordContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* lift button slightly off bottom */
+  margin-bottom: 32px;
+}
+
+/* Round button styling */
 .roundButton {
-  background: rgb(21, 212, 0);
+  background: #6ac3a2; /* darker mint green */
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -20,9 +33,48 @@
   border: none;
   width: 100px;
   height: 100px;
-  box-shadow: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+.roundButton:hover {
+  transform: scale(1.05);
+  background: #529f87; /* darker on hover */
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+.roundButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(168, 230, 207, 0.5); /* pastel mint focus */
 }
 
+/* Recording active state animation */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+  }
+  70% {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 20px rgba(255, 107, 107, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+  }
+}
 .roundButton.active {
-  background: red;
+  background: #ff6b6b; /* pastel red */
+  animation: pulse 1.5s infinite;
+}
+
+/* Root container for prompt screen */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: 16px 16px 0;
+  background-color: #e3f2fd; /* light pastel blue background */
 }
