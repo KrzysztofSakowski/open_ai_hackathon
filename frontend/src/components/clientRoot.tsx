@@ -7,9 +7,10 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import styles from "./promptScreen.module.css";
-import { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IconMicrophone, IconMicrophoneFilled } from "@tabler/icons-react";
 
+const ROOT = "http://localhost:8000";
 const queryClient = new QueryClient();
 
 export function ClientRoot() {
@@ -39,16 +40,35 @@ export interface PromptScreenProps {
   question?: string;
 }
 
-const useRecorder = () => {
+const useRecorder = (options: {convoId: string | undefined; setConvoId: React.Dispatch<React.SetStateAction<string | undefined>>}) => {
   let mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   let recordedChunks: Blob[] = [];
 
   const [isRecording, setIsRecording] = useState(false);
 
+  useEffect(() => {
+    async function fetchConvoId() {
+      try {
+        const response = await fetch(ROOT + "/start", {
+          method: "POST",
+        });
+        if (!response.ok) throw new Error("Convo failed");
+        const data = await response.json();
+        console.log(data);
+        options.setConvoId(data.conversation_id);
+        console.log("Convo started successfully");
+      } catch (error) {
+        console.error("Convo failed", error);
+      }
+    }
+    fetchConvoId();
+  }, []);
+
   const mutation = useMutation({
     mutationFn: async (audioBlob: Blob) => {
       console.log(audioBlob);
+      console.log(options.convoId)
 
       const playback = false;
       if (playback) {
@@ -60,14 +80,14 @@ const useRecorder = () => {
       const formData = new FormData();
       formData.append("audio", audioBlob, "recording.webm");
       try {
-        const response = await fetch("/upload-endpoint", {
+        const response = await fetch(ROOT + "/message/audio/" + options.convoId, {
           method: "POST",
           body: formData,
         });
         if (!response.ok) throw new Error("Upload failed");
         console.log("Upload successful");
-      } catch {
-        console.error("Upload failed");
+      } catch (error) {
+        console.error("Upload failed", error);
       }
     },
   });
@@ -103,7 +123,9 @@ const useRecorder = () => {
 };
 
 export function PromptScreen(props: PromptScreenProps) {
-  const recorder = useRecorder();
+
+  const [convoId, setConvoId] = useState<string | undefined>(undefined);
+  const recorder = useRecorder({convoId, setConvoId});
   return (
     <div>
       <div className={styles.message}>{props.question}</div>

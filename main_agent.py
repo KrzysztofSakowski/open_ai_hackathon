@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import dataclass
 from settings import openai_client
 from tools.event_tool import find_events_for_child
 
@@ -7,7 +8,7 @@ import asyncio
 from pydantic import BaseModel
 from tools.generate_lesson_tool import lesson_generator_agent
 from tools.storytime_agent import get_story
-from tools.onboarding_agent import onboard_user, Knowledge
+from tools.onboarding_agent import onboard_user, Knowledge, ConvoInfo
 from tools.event_tool import EventModel
 
 from agents import (
@@ -26,7 +27,7 @@ class FinalOutput(BaseModel):
     event: EventModel | None
 
 
-parent_assistant_agent = Agent(
+parent_assistant_agent = Agent[ConvoInfo](
     name="main_agent",
     instructions="""
     You are a helpful assistant that helps parents organize their children's evening activities.
@@ -70,7 +71,7 @@ async def main_agent(convo_id: str) -> None:
     final_plan = await Runner.run(
         parent_assistant_agent,
         "",
-        context={"conversation_id": convo_id},
+        context=ConvoInfo(convo_id=convo_id),
     )
     print("Final plan:")
     print("STORY")
@@ -86,6 +87,7 @@ async def main_agent(convo_id: str) -> None:
     print("KNOWLEDGE")
     print(final_plan.final_output.knowledge)
     print("END OF PLAN")
+
 
 if __name__ == "__main__":
     asyncio.run(main_agent())

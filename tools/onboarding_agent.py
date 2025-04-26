@@ -5,7 +5,20 @@ from dataclasses import dataclass
 from pydantic import BaseModel
 from api import post_message, wait_for_user_message
 
-from agents import Agent, ItemHelpers, Runner, TResponseInputItem, trace, function_tool
+from agents import (
+    Agent,
+    ItemHelpers,
+    Runner,
+    TResponseInputItem,
+    trace,
+    function_tool,
+    RunContextWrapper,
+)
+
+
+@dataclass
+class ConvoInfo:
+    convo_id: str
 
 
 class Address(BaseModel):
@@ -60,8 +73,9 @@ knowledge_updater = Agent(
 
 
 @function_tool
-async def onboard_user(wrapper) -> Knowledge:
-    initial_description = input("Tell me something about yourselves: \n  ")
+async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
+    post_message(wrapper.conversation_id, "Tell me something about yourselves:")
+    initial_description = await wait_for_user_message(wrapper.conversation_id)
     initial_result = await Runner.run(
         initial_knowledge_builder,
         [{"content": initial_description, "role": "system"}],

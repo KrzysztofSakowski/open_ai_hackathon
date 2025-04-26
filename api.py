@@ -2,7 +2,6 @@ import base64
 import io
 import os
 import tempfile
-from main_agent import main_agent
 import asyncio
 import uuid
 from fastapi import (
@@ -10,10 +9,9 @@ from fastapi import (
     HTTPException,
     Depends,
     status,
-    Query,
+    Path,
     Form,
     UploadFile,
-    JSONResponse,
 )
 from pydantic import BaseModel
 
@@ -26,6 +24,8 @@ from typing import List, Optional
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, status
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 
 
 class EntryModel(BaseModel):
@@ -39,6 +39,15 @@ app = FastAPI(
     title="My FastAPI Application",
     description="A sample FastAPI application",
     version="0.1.0",
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
 )
 
 
@@ -55,8 +64,11 @@ async def start():
 
     CONVO_DB[CONVO_ID] = EntryModel(messages_to_user=[], messages_to_agent=[])
 
-    asyncio.create_task(main_agent(CONVO_ID))
+    from main_agent import main_agent
 
+    print("Starting main agent")
+    asyncio.create_task(main_agent(CONVO_ID))
+    print("CONVO_ID: ", CONVO_ID)
     return {"conversation_id": CONVO_ID}
 
 
@@ -118,15 +130,13 @@ async def get_state(convo_id: uuid.UUID) -> str:
             audio_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
             # Return the base64-encoded audio
-            return JSONResponse(
-                {
-                    "audio_base64": audio_base64,
-                    "format": "mp3",  # OpenAI returns MP3 by default
-                }
-            )
+            return {
+                "audio_base64": audio_base64,
+                "format": "mp3",  # OpenAI returns MP3 by default
+            }
 
         except Exception as e:
-            return JSONResponse(status_code=500, content={"error": str(e)})
+            return None
         return
     return None
 
@@ -137,7 +147,7 @@ client = OpenAI()
 
 
 @app.post("/message/audio/{convo_id}")
-async def send_message(convo_id: str = Query(), audio: UploadFile = Form()):
+async def send_message(convo_id: str = Path(), audio: UploadFile = Form()):
     global CONVO_DB
     if convo_id not in CONVO_DB:
         raise HTTPException(
