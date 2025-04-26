@@ -12,6 +12,7 @@ class EnvSettings(BaseModel):
     """
 
     openai_api_key: str
+    run_in_cli: bool
 
     @classmethod
     def load(cls, env_path: str = ".env") -> Self:
@@ -21,5 +22,3 @@ class EnvSettings(BaseModel):
 env_settings = EnvSettings.load()
 
 openai_client = AsyncOpenAI(api_key=env_settings.openai_api_key)
-
-RUN_WITHOUT_VOICE = False

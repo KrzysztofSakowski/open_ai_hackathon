@@ -15,8 +15,7 @@ from agents import (
 )
 
 
-@dataclass
-class ConvoInfo:
+class ConvoInfo(BaseModel):
     convo_id: str
 
 
@@ -69,11 +68,12 @@ knowledge_updater = Agent(
 
 @function_tool
 async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
-    print("Tell me something about yourselves: test")
-    print(wrapper.context.convo_id)
-    post_message(wrapper.context.convo_id, "Tell me something about yourselves.")
     print("Tell me something about yourselves:")
     initial_description = await wait_for_user_message(wrapper.context.convo_id)
+    # Ensure initial_description is not None
+    if initial_description is None:
+        print("Warning: Received None for initial_description. Defaulting to empty string.")
+        initial_description = ""
     print("initial_description: ", initial_description)
     initial_result = await Runner.run(
         initial_knowledge_builder,
@@ -105,6 +105,10 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
 
         post_message(wrapper.context.convo_id, structured.follow_up)
         answer = await wait_for_user_message(wrapper.context.convo_id)
+        # Ensure answer is not None
+        if answer is None:
+            print("Warning: Received None for answer. Defaulting to empty string.")
+            answer = ""
         print("answer: ", answer)
 
         updater_input_items: list[TResponseInputItem] = [
