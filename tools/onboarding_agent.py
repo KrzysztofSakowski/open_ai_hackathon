@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from pydantic import BaseModel
+from api import AudioMessageToUser
 from models import Address, PersonEntry, Knowledge
 
 from agents import (
@@ -51,7 +52,7 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
     # Add imports locally
     from api import wait_for_user_message, post_message
 
-    post_message(wrapper.context.convo_id, "Tell me something about yourselves.")
+    post_message(wrapper.context.convo_id, AudioMessageToUser(audio_message="Tell me something about yourselves."))
     print("Tell me something about yourselves:")
     initial_description = await wait_for_user_message(wrapper.context.convo_id)
     # Ensure initial_description is not None
@@ -87,7 +88,7 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
         if structured.follow_up is None or structured.follow_up == "":
             break
 
-        post_message(wrapper.context.convo_id, structured.follow_up)
+        post_message(wrapper.context.convo_id, AudioMessageToUser(audio_message=structured.follow_up))
         answer = await wait_for_user_message(wrapper.context.convo_id)
         # Ensure answer is not None
         if answer is None:
