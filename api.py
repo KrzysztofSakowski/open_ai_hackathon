@@ -94,8 +94,9 @@ def post_message(convo_id: str, message: str):
 
 async def wait_for_user_message(convo_id: str):
     if env_settings.run_in_cli:
-        input("Waiting for user message: ")
-        return
+        # Run blocking input() in a separate thread
+        user_input = await asyncio.to_thread(input, "Waiting for user message: ")
+        return user_input
     print("Waiting for user message...")
     print("CONVO_ID: ", convo_id)
     global CONVO_DB
