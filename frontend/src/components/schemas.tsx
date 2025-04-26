@@ -12,13 +12,13 @@ export const FinalOutputSchema = z.object({
   format: z.literal("text"),
   text: z.object({
     event: z.object({
-      address: z.string(),
-      description: z.string(),
-      estimated_cost: z.string(),
-      justification: z.string(),
-      name: z.string(),
-      url: z.string(),
-      url_to_book_tickets: z.string(),
+      address: z.string().nullable(),
+      description: z.string().nullable(),
+      estimated_cost: z.string().nullable(),
+      justification: z.string().nullable(),
+      name: z.string().nullable(),
+      url: z.string().nullable(),
+      url_to_book_tickets: z.string().nullable(),
     }),
     storyboard: z.object({
       narration: z.string().array(),
