@@ -18,6 +18,7 @@ from models import ConvoInfo
 from tools.storyboard_agent import _get_storyboard
 from images import _generate_image_from_storyboard
 from audio import generate_audio_from_storyboard
+from video import generate_videos
 
 
 class ViolentStoryOutput(BaseModel):
@@ -102,17 +103,22 @@ async def _get_story(wrapper: RunContextWrapper[ConvoInfo], knowledge: Knowledge
     storyboard_output = await _get_storyboard(wrapper, story_result.final_output)
     print("Storyboard generated: " + storyboard_output.model_dump_json())
 
-    print("Generating images...")
-    images_output = await _generate_image_from_storyboard(
-        storyboard_output,
-    )
     print("Generating audio...")
     from openai import AsyncOpenAI
 
     client = AsyncOpenAI()
     audio_output = await generate_audio_from_storyboard(client, storyboard_output)
+
+    print("Generating images...")
+    images_output = await _generate_image_from_storyboard(
+        storyboard_output,
+    )
+
+    print("Generating video...")
+    video_output = await generate_videos(images_output.image_paths)
     print(images_output)
     print(audio_output)
+    print(video_output)
 
     from api import add_to_output
 

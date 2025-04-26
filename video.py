@@ -65,7 +65,8 @@ def check_task_status(task_id, client, timeout=60):
     return None
 
 
-def main(images: list[Path]):
+def generate_videos(images: list[Path]):
+    print("Starting video generation...")
     client = get_client_runway()
 
     list_of_videos = []
@@ -83,10 +84,11 @@ def main(images: list[Path]):
                 list_of_videos.extend(video_output)  # Append URLs
 
     print("Generated videos:", list_of_videos)
+    return list_of_videos
 
 
 if __name__ == "__main__":
-    main(
+    generate_videos(
         images=[
             Path("sample_images/1fe76004-b7dd-438d-a82b-26687f79eba1/img_0.png"),
             Path("sample_images/1fe76004-b7dd-438d-a82b-26687f79eba1/img_1.png"),
