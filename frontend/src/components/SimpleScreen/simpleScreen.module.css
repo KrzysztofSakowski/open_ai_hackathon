@@ -1,23 +1,30 @@
 .grid {
-  position: relative;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   padding: 16px;
 }
 
 .text {
-  font-size: 42px;
-  text-align: center;
+  font-size: 20px;
+  text-align: justify;
   color: #333333;
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
+  padding-bottom: 50px;
+}
+
+.text h1,
+.text h2,
+.text h3 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.text li + li {
+  margin-top: 10px;
 }
 
 .nextButton {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   right: 0;
   background: #6ac3a2;

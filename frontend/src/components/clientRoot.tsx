@@ -15,6 +15,7 @@ import { SimpleScreen } from "./SimpleScreen/SimpleScreen";
 import { MapScreen } from "./MapScreen/MapScreen";
 import { PhotoScreen } from "./PhotoScreen/PhotoScreen";
 import { v4 as uuid } from "uuid";
+import { AudioPromptSchema, FinalOutput, FinalOutputSchema } from "./schemas";
 
 const ROOT = "http://localhost:8000";
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ type AppState =
 export function InnerComponent() {
   const [state, setAppState] = useState<AppState>({ state: "welcome" });
   const [convoId, setConvoId] = useState<string | null>(null);
+  const [output, setOutput] = useState<FinalOutput | null>(null);
 
   if (state.state === "welcome") {
     return (
@@ -102,15 +104,32 @@ export function InnerComponent() {
   }
 
   if (state.state === "prompt") {
-    return <PromptScreen convoId={convoId!} />;
+    return (
+      <PromptScreen
+        convoId={convoId!}
+        onOutput={(output) => {
+          console.log(output);
+          setAppState({ state: "menu" });
+          setOutput(output);
+        }}
+      />
+    );
   }
 
   if (state.state === "story") {
+    const step = state.step;
+    const storyText = output?.text.storyboard.narration[step];
     return (
       <StoryScreen
-        imageUrl="http://picsum.photos/300/300"
-        story="hello"
-        onNext={() => setAppState({ state: "menu" })}
+        imageUrl="http://picsum.photos/300"
+        story={storyText!}
+        onNext={() => {
+          if (step + 1 < (output?.text.storyboard.narration.length ?? 0)) {
+            setAppState({ state: "story", step: step + 1 });
+          } else {
+            setAppState({ state: "menu" });
+          }
+        }}
       />
     );
   }
@@ -128,7 +147,7 @@ export function InnerComponent() {
   if (state.state === "lesson") {
     return (
       <SimpleScreen
-        text="This is a demo lesson screen."
+        text={output!.text.lesson}
         onNext={() => setAppState({ state: "menu" })}
       />
     );
@@ -137,7 +156,7 @@ export function InnerComponent() {
   if (state.state === "artProject") {
     return (
       <SimpleScreen
-        text="This is a demo art project screen."
+        text={output!.text.plan_for_evening}
         onNext={() => setAppState({ state: "menu" })}
       />
     );
@@ -165,6 +184,7 @@ export function InnerComponent() {
 
 export interface PromptScreenProps {
   convoId: string;
+  onOutput: (output: FinalOutput) => void;
 }
 
 const useRecorder = (options: { convoId: string }) => {
@@ -235,7 +255,7 @@ const useRecorder = (options: { convoId: string }) => {
 };
 
 export function PromptScreen(props: PromptScreenProps) {
-  const { convoId } = props;
+  const { convoId, onOutput } = props;
 
   const [prompt, setPrompt] = useState<string | null>(null);
   const recorder = useRecorder({ convoId });
@@ -250,14 +270,28 @@ export function PromptScreen(props: PromptScreenProps) {
         if (!response.ok) throw new Error("Audio failed");
         const data = await response.json();
         if (!data) return;
-        console.log(data);
-        const audio = data.audio_base64;
-        setPrompt(data.text);
-        const audioUrl = "data:audio/webm;base64," + audio;
-        const audioElement = new Audio(audioUrl);
 
-        audioElement.play();
-        console.log("Audio played successfully");
+        console.log(data);
+        const parsedAudio = AudioPromptSchema.safeParse(data);
+        const parsedOutput = FinalOutputSchema.safeParse(data);
+
+        console.log(parsedAudio);
+        console.log(parsedOutput);
+
+        if (parsedAudio.success) {
+          setPrompt(data.text);
+          try {
+            const audio = data.audio_base64;
+            const audioUrl = "data:audio/webm;base64," + audio;
+            const audioElement = new Audio(audioUrl);
+            audioElement.play();
+            console.log("Audio played successfully");
+          } catch (error) {
+            console.error("Audio failed", error);
+          }
+        } else if (parsedOutput.success) {
+          onOutput(parsedOutput.data);
+        }
       } catch (error) {
         console.error("Audio failed", error);
       }

@@ -72,7 +72,7 @@ For each moment, create a scene with the following structure:
     add_to_output(
         wrapper.context.convo_id,
         "storyboard",
-        output.model_dump_json(),
+        output.model_dump(),
     )
     return output
 
