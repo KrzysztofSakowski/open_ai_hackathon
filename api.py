@@ -38,11 +38,15 @@ app.add_middleware(
 )
 
 
+class StartBody(BaseModel):
+    conversation_id: str | None = None
+
+
 @app.post("/start")
-async def start():
+async def start(body: StartBody):
     global CONVO_DB
 
-    CONVO_ID = str(uuid.uuid4())
+    CONVO_ID = body.conversation_id or str(uuid.uuid4())
     if CONVO_ID in CONVO_DB:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
