@@ -11,6 +11,8 @@ import React, { use, useEffect, useRef, useState } from "react";
 import { IconMicrophone, IconMicrophoneFilled } from "@tabler/icons-react";
 import { StoryScreen } from "./StoryScreen/StoryScreen";
 import { WelcomeScreen } from "./WelcomeScreen/WelcomeScreen";
+import { MenuScreen } from "./MenuScreen/MenuScreen";
+import { SimpleScreen } from "./SimpleScreen/SimpleScreen";
 
 const ROOT = "http://localhost:8000";
 const queryClient = new QueryClient();
@@ -23,10 +25,17 @@ export function ClientRoot() {
   );
 }
 
-type AppState = { state: "welcome" } | { state: "prompt" };
+type AppState =
+  | { state: "welcome" }
+  | { state: "prompt" }
+  | { state: "story"; step: number }
+  | { state: "activities" }
+  | { state: "lesson" }
+  | { state: "artProject" }
+  | { state: "menu" };
 
 export function InnerComponent() {
-  const [state, setAppState] = useState({ state: "welcome" });
+  const [state, setAppState] = useState<AppState>({ state: "welcome" });
   const [convoId, setConvoId] = useState<string | null>(null);
 
   if (state.state === "welcome") {
@@ -55,14 +64,65 @@ export function InnerComponent() {
     );
   }
 
-  if (!convoId) {
-    return null;
+  if (state.state === "prompt") {
+    return <PromptScreen convoId={convoId!} />;
   }
 
-  return (
-    // <StoryScreen imageUrl="http://picsum.photos/300/300" story="hello" />
-    <PromptScreen convoId={convoId} />
-  );
+  if (state.state === "story") {
+    return (
+      <StoryScreen
+        imageUrl="http://picsum.photos/300/300"
+        story="hello"
+        onNext={() => setAppState({ state: "menu" })}
+      />
+    );
+  }
+
+  if (state.state === "activities") {
+    return (
+      <SimpleScreen
+        text="This is a demo activities screen."
+        onNext={() => setAppState({ state: "menu" })}
+      />
+    );
+  }
+
+  if (state.state === "lesson") {
+    return (
+      <SimpleScreen
+        text="This is a demo lesson screen."
+        onNext={() => setAppState({ state: "menu" })}
+      />
+    );
+  }
+
+  if (state.state === "artProject") {
+    return (
+      <SimpleScreen
+        text="This is a demo art project screen."
+        onNext={() => setAppState({ state: "menu" })}
+      />
+    );
+  }
+
+  if (state.state === "menu") {
+    return (
+      <MenuScreen
+        onStory={() => setAppState({ state: "story", step: 0 })}
+        onActivities={() => setAppState({ state: "activities" })}
+        onLesson={() => setAppState({ state: "lesson" })}
+        onArtProject={() => setAppState({ state: "artProject" })}
+        onRegenerate={() => {
+          console.log("Regenerate clicked");
+        }}
+        onComplete={() => {
+          console.log("Complete clicked");
+        }}
+      />
+    );
+  }
+
+  return null;
 }
 
 export interface PromptScreenProps {

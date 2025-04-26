@@ -1,0 +1,173 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  padding: 16px;
+  gap: 16px;
+}
+
+.imageSlot {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  background-color: #f0f0f0;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.buttonGrid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+.button {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.8rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease,
+    background-color 0.3s ease;
+}
+
+.button:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.imageActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.iconButton {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  z-index: 1;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.iconButton svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.left {
+  top: 16px;
+  left: 16px;
+  transform: none;
+  background: rgba(231, 76, 60, 0.8);
+}
+
+.left:hover {
+  background: rgba(231, 76, 60, 1);
+}
+
+.right {
+  top: 16px;
+  right: 16px;
+  transform: none;
+  background: rgba(46, 204, 113, 0.8);
+}
+
+.right:hover {
+  background: rgba(46, 204, 113, 1);
+}
+
+/* Shine animation */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) skewX(-10deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(50%) skewX(-10deg);
+    opacity: 0.2;
+  }
+  100% {
+    transform: translateX(100%) skewX(-10deg);
+    opacity: 0;
+  }
+}
+
+/* Individual button colors */
+.story {
+  background: linear-gradient(45deg, hsl(120,60%,80%), hsl(120,60%,60%));
+  color: white;
+}
+
+.activities {
+  background: linear-gradient(45deg, hsl(130,60%,80%), hsl(130,60%,60%));
+  color: white;
+}
+
+.lesson {
+  background: linear-gradient(45deg, hsl(140,60%,80%), hsl(140,60%,60%));
+  color: white;
+}
+
+.artProject {
+  background: linear-gradient(45deg, hsl(150,60%,80%), hsl(150,60%,60%));
+  color: white;
+}
+
+/* Shine overlay for each */
+.story::after,
+.activities::after,
+.lesson::after,
+.artProject::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 30%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: skewX(-10deg);
+  animation: shine 5s infinite ease-in-out;
+}
+
+/* Add individual animation delays */
+.story::after {
+  animation-delay: 0s;
+}
+
+.activities::after {
+  animation-delay: 0.5s;
+}
+
+.lesson::after {
+  animation-delay: 1s;
+}
+
+.artProject::after {
+  animation-delay: 1.5s;
+}
