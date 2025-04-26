@@ -1,8 +1,8 @@
-# Fairytale agent using OpenAI's GPT-4o model
 import base64
 import os
 import time
 from pathlib import Path
+from typing import cast
 
 from runwayml import RunwayML
 
@@ -14,7 +14,7 @@ def get_client_runway() -> RunwayML:
     return RunwayML(api_key=api_key)
 
 
-def generate_video(input_image_path: Path, client):
+def generate_video(input_image_path: Path, client: RunwayML):
     """Encodes an image and submits a request to generate video."""
     try:
         with open(input_image_path, "rb") as image_file:
@@ -37,13 +37,14 @@ def generate_video(input_image_path: Path, client):
         return None
 
 
-def check_task_status(task_id, client, timeout=60):
+def check_task_status(task_id, client: RunwayML, timeout=60):
     """Polls task status with a timeout mechanism and returns output URLs."""
     start_time = time.time()
 
     while time.time() - start_time < timeout:
         try:
             task = client.tasks.retrieve(id=task_id)
+            assert task.output is not None, f"Task {task.output} is None."
 
             if task.status == "SUCCEEDED":
                 print("Task completed!")
@@ -65,26 +66,38 @@ def check_task_status(task_id, client, timeout=60):
     return None
 
 
-def generate_videos(images: list[Path]):
+def generate_videos(images: list[Path]) -> list[str]:
     print("Starting video generation...")
     client = get_client_runway()
-
-    list_of_videos = []
+    task_ids: dict[str, str | None] = {}
 
     for img in images:
         assert img.exists(), f"Image {img} does not exist."
 
         task_id = generate_video(img, client)  # Get task ID
+        assert task_id, f"Failed to create task for {img}"
         print(f"Task ID: {task_id}")
+        task_ids[task_id] = None  # Mark tsk as not ready
 
-        if task_id:
-            video_output = check_task_status(task_id, client)  # Get output URLs
+    while not all(task_ids.values()):
+        print("Waiting for tasks to complete...")
+        time.sleep(10)
 
-            if video_output:
-                list_of_videos.extend(video_output)  # Append URLs
+        for task_id, url in task_ids.items():
+            if url is not None:
+                continue
 
-    print("Generated videos:", list_of_videos)
-    return list_of_videos
+            url_candidate = check_task_status(task_id, client)
+            if url_candidate:
+                task_ids[task_id] = url_candidate
+                print(f"Task {task_id} is ready.")
+            else:
+                print(f"Task {task_id} is not ready yet.")
+
+    list_of_videos = list(task_ids.values())
+    print(f"Generated videos: {list_of_videos}")
+
+    return cast(list[str], list_of_videos)
 
 
 if __name__ == "__main__":
