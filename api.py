@@ -4,7 +4,7 @@ import os
 import tempfile
 import asyncio
 import uuid
-from settings import RUN_WITHOUT_VOICE
+from settings import env_settings
 from convert_mp3 import convert_webm_to_mp3
 from fastapi import (
     FastAPI,
@@ -75,7 +75,7 @@ async def start():
 
 
 def post_message(convo_id: str, message: str):
-    if RUN_WITHOUT_VOICE:
+    if env_settings.run_in_cli:
         print("Posting message without voice...")
         print("CONVO_ID: ", convo_id)
         print("Message: ", message)
@@ -93,7 +93,7 @@ def post_message(convo_id: str, message: str):
 
 
 async def wait_for_user_message(convo_id: str):
-    if RUN_WITHOUT_VOICE:
+    if env_settings.run_in_cli:
         input("Waiting for user message: ")
         return
     print("Waiting for user message...")

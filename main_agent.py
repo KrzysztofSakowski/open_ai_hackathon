@@ -90,4 +90,4 @@ async def main_agent(convo_id: str) -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main_agent())
+    asyncio.run(main_agent(convo_id="test"))
