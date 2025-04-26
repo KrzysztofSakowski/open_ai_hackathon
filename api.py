@@ -12,8 +12,23 @@ from pydantic import BaseModel
 from settings import env_settings
 
 
+class MessageToUser(BaseModel):
+    type: str
+
+
+class AudioMessageToUser(MessageToUser):
+    type: str = "audio"
+    audio_message: str
+
+
+class OutputMessageToUser(MessageToUser):
+    type: str = "output"
+    story: str
+    event: str
+
+
 class EntryModel(BaseModel):
-    messages_to_user: list[str]
+    messages_to_user: list[MessageToUser]
     messages_to_agent: list[str]
 
 
@@ -59,11 +74,11 @@ async def start():
     return {"conversation_id": CONVO_ID}
 
 
-def post_message(convo_id: str, message: str):
+def post_message(convo_id: str, message: MessageToUser):
     if env_settings.run_in_cli:
         print("Posting message without voice...")
         print("CONVO_ID: ", convo_id)
-        print("Message: ", message)
+        print("Message: ", message.dict())
         return
     print("Posting message...")
     global CONVO_DB
@@ -112,37 +127,40 @@ async def get_state(convo_id: str = Path()):
         )
     if CONVO_DB[convo_id].messages_to_user:
         msg = CONVO_DB[convo_id].messages_to_user.pop(0)
-        try:
-            # Create a bytes buffer to store the audio
-            buffer = io.BytesIO()
 
-            # Generate speech and stream it to the buffer
-            with client.audio.speech.with_streaming_response.create(
-                model="gpt-4o-mini-tts",
-                voice="coral",
-                input=msg,
-                instructions="Speak in a cheerful and positive tone.",
-            ) as response:
-                # Stream to our buffer instead of a file
-                for chunk in response.iter_bytes():
-                    buffer.write(chunk)
+        if msg.type == "audio":
+            try:
+                # Create a bytes buffer to store the audio
+                buffer = io.BytesIO()
 
-            # Reset buffer position to start
-            buffer.seek(0)
+                # Generate speech and stream it to the buffer
+                with client.audio.speech.with_streaming_response.create(
+                    model="gpt-4o-mini-tts",
+                    voice="coral",
+                    input=msg,
+                    instructions="Speak in a cheerful and positive tone.",
+                ) as response:
+                    # Stream to our buffer instead of a file
+                    for chunk in response.iter_bytes():
+                        buffer.write(chunk)
 
-            # Encode the entire audio buffer to base64
-            audio_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+                # Reset buffer position to start
+                buffer.seek(0)
 
-            # Return the base64-encoded audio
-            return {
-                "audio_base64": audio_base64,
-                "text": msg,
-                "format": "mp3",  # OpenAI returns MP3 by default
-            }
+                # Encode the entire audio buffer to base64
+                audio_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
-        except Exception as e:
-            return None
-
+                # Return the base64-encoded audio
+                return {
+                    "type": "audio",
+                    "audio_base64": audio_base64,
+                    "text": msg,
+                    "format": "mp3",  # OpenAI returns MP3 by default
+                }
+            except Exception as e:
+                return None
+        else:
+            return {"type": "output", "text": msg, "format": "text"}
     return None
 
 
@@ -168,7 +186,9 @@ async def send_message(convo_id: str = Path(), audio: UploadFile = Form()):
     try:
         # Open the temporary file and send to OpenAI for transcription
         with open(temp_file_path, "rb") as file:
-            transcription = client.audio.transcriptions.create(model="gpt-4o-transcribe", file=file)
+            transcription = client.audio.transcriptions.create(
+                model="gpt-4o-transcribe", file=file
+            )
 
         print(transcription.text)
         # Return the transcription result
