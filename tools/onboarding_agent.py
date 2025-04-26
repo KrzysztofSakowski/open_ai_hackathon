@@ -70,7 +70,7 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
                 likes=["mystery", "magic", "turtles", "bats"],
                 dislikes=["sports"],
             ),
-            theme="Interactive story about Turtles with Mark on a hike through a magical place.",
+            theme="Turtles with Mark on a hike through a magical place.",
         )
 
     # Add imports locally

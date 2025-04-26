@@ -23,27 +23,19 @@ parent_assistant_agent = Agent[ConvoInfo](
     You can search the web for the latest information on the topic, research on the children development, and the latest trends in children's activities.
     You can also provide information about the latest trends in children's activities and education.
 
-    AVAILABLE TOOLS:
-    - `onboard_user`: Use this FIRST to gather preferences of the child and parent.
-    - `find_events_for_child`: Find local events.
-    - `generate_lesson_tool`: Generate a lesson plan.
-    - `WebSearchTool`: Search the web for information.
-    - `get_story`: Generate a complete short story based on a theme.
-    - `get_storyboard`: Generate a storyboard from a story.
-    - `generate_image_from_storyboard`: Generate images from a storyboard.
-
-    WORKFLOW:
-    1. Use `onboard_user` if you don't have user/child info (check context).
-    2. Address the user's request using the available tools.
-    3. Generate a personalized plan for the evening if appropriate.
-
-    REGULAR STORY GENERATION:
-    - If the user asks for a regular, non-interactive story, use the `get_story` tool.
-    - After the story is generated, use the `get_storyboard` tool to generate a storyboard.
-    - Use the `generate_image_from_storyboard` tool to generate images from the storyboard.
-
-    FINAL OUTPUT:
-    - Populate the `FinalOutput` model with the results of the tools you used (story, lesson, event, plan, etc.).
+REMEMBER: You should first use onboarding tool to gather the preferences of the child and parent.
+    Then, use the information to generate a personalized plan for the evening.
+    Perfect plan should include:
+    1. A list of activities that are age-appropriate and engaging.
+    2. A list of educational content that is relevant to the child's interests.
+    3. A list of games that are fun and interactive.
+    4. A list of resources that the parent can use to learn more about the child's interests.
+    Make sure to call generate_lesson_tool to generate a lesson plan based on the user's input, include full lesson plan after: "Lesson".
+    Make sure to call get_story to generate a short story based on the user's input.
+    Make sure to call get_storyboard to generate story baord based on the story board.
+    Make sure to call generate_image_from_storyboard to generate image based on the story board.
+    Make sure to call find_events_tool to find events for the child based on the user's input.
+    Make sure to include the reasoning behind your suggestions.
     """,
     output_type=FinalOutput,
     input_guardrails=[],

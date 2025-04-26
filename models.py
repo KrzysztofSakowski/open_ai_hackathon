@@ -45,7 +45,7 @@ class InteractiveTurnOutput(BaseModel):
 
 
 class FinalOutput(BaseModel):
-    story: str | None = None
+    story: str
     story_image_paths: list[str]
     lesson: str
     reasoning: str
