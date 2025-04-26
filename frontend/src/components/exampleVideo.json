@@ -1,0 +1,121 @@
+{
+    "type": "output",
+    "text": {
+        "storyboard": {
+            "images": [
+                "Illustrate a lively, bustling scene of Warsaw by the Vistula River. In the foreground, feature Tilly, a small, curious turtle with a shiny green shell and tiny feet, looking up at the sky with wonder. The background is filled with colorful Warsaw buildings and the sparkling river.",
+                "Create a scene showing Tilly the turtle packing a tiny leaf with snacks and peeking out excitedly from her cozy home. Her eyes are filled with determination and curiosity. The surroundings depict a cozy, nature-filled habitat with warm, inviting colors.",
+                "Illustrate a cheerful encounter between Tilly and Benny the Brave Beetle on a sunny pathway. Tilly is looking up at Benny with excitement, while Benny, a tiny beetle with iridescent wings, is buzzing energetically above her. The pathway is lined with vibrant flowers and green grass.",
+                "Depict Tilly and Benny navigating through the bustling streets of Warsaw. Show giant human shoes bustling around them and cobblestone streets sprawled out. Tilly and Benny move determinedly amidst the vibrant and busy cityscape, in a whimsical, child-friendly style.",
+                "Illustrate the awe-inspiring arrival of Tilly and Benny at the grand doors of the Copernicus Science Centre. The building is majestic, with tall arches and banners about science. Tilly and Benny are gazing up in amazement. The sky is clear and blue, enhancing the sense of adventure.",
+                "Create an enchanting scene inside the Copernicus Science Centre, with Tilly and Benny standing in awe. The ceiling is filled with colorful, shiny planets and twinkling stars. A whimsical, starry glow fills the room, captivating both Tilly and Benny as they explore.",
+                "Depict Tilly and Benny walking home under a vast, star-filled night sky over Warsaw. Tilly, with a thoughtful and content expression, looks up at the stars, while Benny flies beside her. The scene is peaceful and filled with warm hues, symbolizing discovery and friendship."
+            ],
+            "narration": [
+                "In the vibrant city of Warsaw, nestled close to the Vistula River, lived a curious little turtle named Tilly.",
+                "Tilly decided it was time for an adventure to the Copernicus Science Centre, filled with the wonders of the universe.",
+                "On her way, Tilly met her best friend, Benny the Brave Beetle.",
+                "The duo navigated the bustling pathways of Warsaw, dodging giant human shoes and crossing cobblestone streets.",
+                "They finally arrived at the grand doors of the Copernicus Science Centre.",
+                "Inside, a world of wonder awaited them. Planets hanging from the ceiling and stars twinkling like the real night sky.",
+                "Tilly beamed with a newfound realization. 'Learning is the greatest adventure of all!'"
+            ],
+            "main_character_description": "Tilly is a small, curious turtle with a shiny green shell that glimmers like emerald under the sun. She has bright, inquisitive eyes and tiny feet. Her expression is always one of wonder and adventure, perfectly capturing her love for exploration and learning. Add subtle touches of whimsy, with colorful hues to match the spirit of a children's story."
+        },
+        "story_images": {
+            "image_paths": [
+                "static/sample_images/20250426162510/img_0.png",
+                "static/sample_images/20250426162510/img_1.png",
+                "static/sample_images/20250426162510/img_2.png",
+                "static/sample_images/20250426162510/img_3.png",
+                "static/sample_images/20250426162510/img_4.png",
+                "static/sample_images/20250426162510/img_5.png",
+                "static/sample_images/20250426162510/img_6.png",
+                "static/sample_images/20250426162510/img_7.png"
+            ]
+        },
+        "story_audio": [
+            "static/sample_audio/audio_0.mp3",
+            "static/sample_audio/audio_1.mp3",
+            "static/sample_audio/audio_2.mp3",
+            "static/sample_audio/audio_3.mp3",
+            "static/sample_audio/audio_4.mp3",
+            "static/sample_audio/audio_5.mp3",
+            "static/sample_audio/audio_6.mp3"
+        ],
+        "story_video": [
+            [
+                "https://dnznrvs05pmza.cloudfront.net/6bba84e4-aed6-4912-8e8f-4e2a86df9139.mp4?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMmJlZjBlYWI1YTY0ZmViOCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc0NTc5ODQwMH0.L6PjMZAUvL807OPY0pQg8yJj1d7LzTsss9v8ZlTY29k"
+            ],
+            [
+                "https://dnznrvs05pmza.cloudfront.net/49276e79-7721-4834-aa63-ff4c835c1e27.mp4?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZmE4NTY1ODI2MWM1OWQxMyIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc0NTc5ODQwMH0.WQ_rb4ohA1HkkQbgwkPV16CCxtK2Z3Q-UnzcmB4n1mo"
+            ],
+            [
+                "https://dnznrvs05pmza.cloudfront.net/d9494e48-9b51-4215-adac-055d22d8bc4f.mp4?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZmI4ZWEyM2Y5NzY0NTMwZSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc0NTc5ODQwMH0.K_VCHdVdM3cptBHFMugrMQM6WPoZftEr7IylCijOodA"
+            ],
+            [
+                "https://dnznrvs05pmza.cloudfront.net/e3ecaa70-9da3-46c6-ac0f-4b9e20e01cca.mp4?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZjJhMjczNTdjNjlkMWU3MSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc0NTc5ODQwMH0.Ko-zCUWbsIiZBwKLcVDRSzdMzaad9CCPSxnZPJq5cDY"
+            ],
+            [
+                "https://dnznrvs05pmza.cloudfront.net/d147555f-ae7b-4929-83b5-7e914ae412c4.mp4?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZmUyNzEwN2NkODZmNTAwOSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc0NTc5ODQwMH0.6xnh98V-2uFOzdCRiekKtw_4hCpbSdqwBewZ_iN7FAM"
+            ],
+            [
+                "https://dnznrvs05pmza.cloudfront.net/e4cdd08b-26c1-49ee-9c92-90ac524a2c8c.mp4?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNjBhZDI5NGNmMWYyYzg1MiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc0NTc5ODQwMH0.naNuXDgBcCB7yXdtWX5z2CKhgSgMXlVXacegbjKb6e8"
+            ],
+            [
+                "https://dnznrvs05pmza.cloudfront.net/3e313c50-425a-4550-9894-7792a7b773b3.mp4?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMDM0ZjczYmIwMjc2OTc5YyIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc0NTc5ODQwMH0.cp3GsLXyDP4n2Lp2nvPTbJyFyJrNzRxSrXvFfNTn6Hw"
+            ],
+            [
+                "https://dnznrvs05pmza.cloudfront.net/8a491cdd-0a34-4bea-9971-a1e36f967960.mp4?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZTQ2YzRlZDY1MDM0OGJiYiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc0NTc5ODQwMH0.9xF5nDh0yYUgq2MieGKayRwqPMFWR_KW-uE1P8UqysI"
+            ]
+        ],
+        "story": "**Title: Tilly's Adventure to the Stars**\n\nIn the vibrant city of Warsaw, nestled close to the Vistula River, lived a curious little turtle named Tilly. With her shiny green shell and tiny feet, she loved exploring. Her favorite fascination was the stars and planets. Tilly’s owner, Mark, had told her about a fantastic place called the Copernicus Science Centre, filled with the wonders of the universe.\n\nOne sunny morning, Tilly decided it was time for an adventure. She packed a small leaf with snacks and peeked out from her cozy home. On her way, she met her best friend, Benny the Brave Beetle. “Where are you headed, Tilly?” asked Benny.\n\n“Oh, Benny, I'm going to learn about the stars at the Copernicus Centre!” Tilly replied excitedly. Benny's wings fluttered with excitement, and he decided to join her.\n\nTogether, the duo navigated the bustling pathways of Warsaw, dodging giant human shoes and crossing cobblestone streets. They finally arrived at the grand doors of the Copernicus Science Centre.\n\nInside, a world of wonder awaited them. Tilly and Benny marveled at shiny planets hanging from the ceiling and stars that twinkled like the real night sky.\n\n“Look, Benny! A telescope!” Tilly squealed. With help from a friendly sparrow who worked there, they peeked through it, amazed by the view of distant galaxies. The stars seemed to dance, whispering secrets of the universe.\n\nAfter a day filled with exploration, Tilly and Benny headed home under the real stars that sparkled above Warsaw. As they walked, Tilly beamed with a newfound realization. “Benny, learning is the greatest adventure of all!”\n\nFrom that day on, Tilly and Benny embarked on many more adventures, eager to learn and discover the magic that the world had to offer.\n\nCuriosity and friendship make every adventure brighter, and there’s always a new star waiting to be discovered!",
+        "story_image_paths": [],
+        "lesson": "### Lesson Plan: Introduction to Copernicus and Basic Astronomy\n\n**Age Group:** 10 years old  \n**Subject:** Basic Astronomy and Historical Impact of Copernicus  \n**Duration:** 60 minutes\n\n#### Objectives:\n- Understand the contributions of Nicolaus Copernicus to astronomy.\n- Learn basic astronomy concepts: solar system, planets, and orbits.\n- Foster curiosity about space science and history.\n\n#### Materials:\n- Projector or Smartboard\n- Images/videos of the solar system\n- Printouts for activities\n- Balloon, string, and glue (for interactive model)\n- Worksheets/Quiz\n\n---\n\n### Introduction (10 minutes)\n\n1. **Hook:** \n   - Show a short video or animation of the solar system.\n   - Ask questions like: \"Have you ever wondered how astronomers figure out the order of planets?\"\n\n2. **Who is Copernicus?**\n   - Briefly introduce Nicolaus Copernicus: \n     - Lived in the 16th century.\n     - Proposed that the Earth orbits the Sun (heliocentric model).\n\n### Main Content (30 minutes)\n\n1. **Copernicus’ Contribution:**\n   - Explain the geocentric vs. heliocentric models with diagrams.\n   - Discuss why Copernicus’ idea was revolutionary for his time.\n\n2. **Basic Astronomy Concepts:**\n   - **Solar System**: Names and order of planets.\n   - **Orbits**: Explain how planets revolve around the Sun.\n   - **Positioning in Space**: Introduce simple concepts of stars, galaxies.\n\n3. **Interactive Model (Hands-On Activity):**\n   - **Building a Mini Solar System:**\n     - Use a balloon as the Sun.\n     - Create planet models from paper or printouts.\n     - Use string to demonstrate orbits by attaching planets to the balloon.\n\n### Interactive Session (15 minutes)\n\n1. **Virtual Museum Tour:**\n   - Use online resources or virtual tours of a planetarium or space museum.\n   - Show exhibits related to Copernicus and early astronomy tools.\n\n2. **Think-Pair-Share:**\n   - Students discuss with a partner what they found most interesting about Copernicus and astronomy.\n   - Share insights with the class.\n\n### Conclusion (5 minutes)\n\n1. **Recap:**\n   - Quick questions to review key points (e.g., What is the heliocentric model?).\n\n2. **Extension Activity:**\n   - Encourage students to visit a local planetarium or science museum.\n   - Provide a list of recommended documentaries to watch at home.\n\n### Assessment\n\n- **Worksheet/Quiz**: Short questions on Copernicus’ contribution and basic solar system facts to assess understanding.\n- **Participation**: Engage in discussions and the activity for insights into interest and understanding.\n\nThis engaging mix of storytelling, visuals, interaction, and discussion not only caters to the child’s interest in physics but also connects with their passion for museums through the virtual tour element.",
+        "reasoning": "Mark's love for Copernicus, physics, and museums makes the Copernicus Science Centre a perfect outing. It aligns with his interests, providing educational exhibits that will engage and educate him. The lesson plan on Copernicus and basic astronomy expands his knowledge and curiosity, while the story about Tilly offers a creative complement to his interests.",
+        "plan_for_evening": "### Evening Plan for Mark and Helena:\n\n1. **Visit to the Copernicus Science Centre**   \n   - **Time:** Plan to spend at least a few hours exploring the exhibits.  \n   - **Tickets:** Purchase tickets in advance to ensure availability. [Book here](https://www.kopernik.org.pl/en/visit/tickets/)\n   - **Activities:** Engage with interactive exhibits, especially in the Planetarium.\n     \n2. **Educational Activity:**\n   - **At Home:** Participate in the \"Introduction to Copernicus and Basic Astronomy\" lesson.\n   - **Materials Needed:** Prepare by gathering a balloon, string, glue, and printouts for the solar system model.\n\n3. **Story Time:**\n   - Read \"Tilly's Adventure to the Stars\" together.\n   - Discuss the story and highlight the importance of curiosity and exploration.\n\n4. **Follow-up Resources:**\n   - Consider watching a documentary on space or planetariums together in the future.\n   - Visit the webpage of the Copernicus Science Centre for additional educational resources: [Copernicus Science Centre website](https://www.kopernik.org.pl/en/)\n\nThese activities and lessons are crafted to engage Mark's passion for science while providing a family bonding experience with Helena.",
+        "knowledge": {
+            "address": {
+                "country": "Poland",
+                "city": "Warsaw"
+            },
+            "parent": {
+                "name": "Helena",
+                "age": 40,
+                "likes": [
+                    "Kopernik",
+                    "physics",
+                    "museums"
+                ],
+                "dislikes": [
+                    "spiders",
+                    "ants",
+                    "bats"
+                ]
+            },
+            "child": {
+                "name": "Mark",
+                "age": 10,
+                "likes": [
+                    "Kopernik",
+                    "physics",
+                    "museums"
+                ],
+                "dislikes": [
+                    "sports"
+                ]
+            },
+            "theme": "Mark wants to visit Kopernik center in Warsaw with his trusty turtle."
+        },
+        "event": {
+            "name": "Visit to Copernicus Science Centre",
+            "description": "An interactive science museum offering over 400 exhibits, including the 'Buzzz!' gallery for children up to 5 years old, the High Voltage Theatre, and the Robotic Theatre. The Planetarium features live sky shows and space-themed films suitable for all ages.",
+            "justification": "The Copernicus Science Centre provides a hands-on learning experience in physics and astronomy, aligning with the child's interests in museums, physics, and Copernicus. The exhibits are designed to be engaging and educational for children.",
+            "estimated_cost": "Varies; check the official website for current pricing.",
+            "url": "https://www.kopernik.org.pl/en/",
+            "url_to_book_tickets": "https://www.kopernik.org.pl/en/visit/tickets/",
+            "address": "Wybrzeże Kościuszkowskie 20, 00-390 Warsaw, Poland"
+        }
+    },
+    "format": "text"
+}

@@ -17,7 +17,7 @@ import { PhotoScreen } from "./PhotoScreen/PhotoScreen";
 import { v4 as uuid } from "uuid";
 import { AudioPromptSchema, FinalOutput, FinalOutputSchema } from "./schemas";
 import { ROOT } from "./constants";
-import faked from "./exampleResponse.json";
+import faked from "./exampleVideo.json";
 
 const queryClient = new QueryClient();
 
@@ -40,9 +40,9 @@ type AppState =
   | { state: "menu" };
 
 export function InnerComponent() {
-  const [state, setAppState] = useState<AppState>({ state: "welcome" });
+  const [state, setAppState] = useState<AppState>({ state: "menu" });
   const [convoId, setConvoId] = useState<string | null>(null);
-  const [output, setOutput] = useState<FinalOutput | null>(null);
+  const [output, setOutput] = useState<FinalOutput | null>(faked);
 
   console.log(output);
 
@@ -124,7 +124,7 @@ export function InnerComponent() {
     const storyText = output?.text.storyboard.narration[step];
     return (
       <StoryScreen
-        videoUrl={output?.text.story_video?.at(step) ?? null}
+        videoUrl={output?.text.story_video?.flat().at(step + 1) ?? null}
         imageUrl={ROOT + "/" + output!.text.story_images.image_paths[step + 1]!}
         audioUrl={ROOT + "/" + output!.text.story_audio[step]!}
         story={storyText!}
