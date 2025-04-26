@@ -39,10 +39,18 @@ async def generate_image_from_img(client: AsyncOpenAI, prompt: str, image_path, 
 
 
 @function_tool
-async def generate_image_from_storyboard(story_board: StoryboardOutput) -> StoryImageOutput:
+async def generate_image_from_storyboard(
+    story_board: StoryboardOutput,
+) -> StoryImageOutput:
+    return await _generate_image_from_storyboard(story_board)
+
+
+async def _generate_image_from_storyboard(
+    story_board: StoryboardOutput,
+) -> StoryImageOutput:
     """Generate images from the storyboard output."""
     client = AsyncOpenAI()
-    output_dir = Path("sample_images") / str(uuid.uuid4())
+    output_dir = Path("static/sample_images") / str(uuid.uuid4())
     output_dir.mkdir(parents=True, exist_ok=True)
 
     hero_image_path = output_dir / "img_0.png"

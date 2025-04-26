@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 from pydantic import BaseModel
 
@@ -15,6 +16,8 @@ from tools.onboarding_agent import Knowledge, PersonEntry, Address
 from api import post_message
 from models import ConvoInfo
 from tools.storyboard_agent import _get_storyboard
+from images import _generate_image_from_storyboard
+from audio import generate_audio_from_storyboard
 
 
 class ViolentStoryOutput(BaseModel):
@@ -81,6 +84,7 @@ async def _get_story(wrapper: RunContextWrapper[ConvoInfo], knowledge: Knowledge
     Remember: Generate a story with the theme: {theme}.
 """
 
+    print("Generating story outline...")
     # Ensure the entire workflow is a single trace
     # 1. Generate an outline
     outline_result = await Runner.run(
@@ -97,6 +101,26 @@ async def _get_story(wrapper: RunContextWrapper[ConvoInfo], knowledge: Knowledge
 
     storyboard_output = await _get_storyboard(wrapper, story_result.final_output)
     print("Storyboard generated: " + storyboard_output.model_dump_json())
+
+    print("Generating images...")
+    images_output = await _generate_image_from_storyboard(
+        storyboard_output,
+    )
+    print("Generating audio...")
+    audio_output = await generate_audio_from_storyboard(storyboard_output)
+
+    from api import add_to_output
+
+    add_to_output(
+        wrapper.context.convo_id,
+        "story_images",
+        json.dumps(images_output),
+    )
+    add_to_output(
+        wrapper.context.convo_id,
+        "story_audio",
+        json.dumps(audio_output),
+    )
 
     return StoryOutput(
         story=story_result.final_output,
