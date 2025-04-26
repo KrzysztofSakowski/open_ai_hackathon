@@ -13,6 +13,8 @@ import { StoryScreen } from "./StoryScreen/StoryScreen";
 import { WelcomeScreen } from "./WelcomeScreen/WelcomeScreen";
 import { MenuScreen } from "./MenuScreen/MenuScreen";
 import { SimpleScreen } from "./SimpleScreen/SimpleScreen";
+import { MapScreen } from "./MapScreen/MapScreen";
+import { v4 as uuid } from "uuid";
 
 const ROOT = "http://localhost:8000";
 const queryClient = new QueryClient();
@@ -44,9 +46,23 @@ export function InnerComponent() {
         onStart={() => {
           async function fetchConvoId() {
             try {
+              const storedId = localStorage.getItem("convoId");
+              let convoIdToSend: string;
+              if (storedId) {
+                convoIdToSend = storedId;
+              } else {
+                convoIdToSend = uuid();
+                localStorage.setItem("convoId", convoIdToSend);
+              }
+
               const response = await fetch(ROOT + "/start", {
                 method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ conversation_id: convoIdToSend }),
               });
+
               if (!response.ok) throw new Error("Convo failed");
               const data = await response.json();
               console.log(data);
@@ -80,8 +96,9 @@ export function InnerComponent() {
 
   if (state.state === "activities") {
     return (
-      <SimpleScreen
-        text="This is a demo activities screen."
+      <MapScreen
+        lat={37.7749}
+        lng={-122.4194}
         onNext={() => setAppState({ state: "menu" })}
       />
     );
