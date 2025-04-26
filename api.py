@@ -84,7 +84,7 @@ async def start(body: StartBody):
         #     detail="Conversation ID already exists",
         # )
 
-    CONVO_DB[CONVO_ID] = EntryModel(
+    CONVO_DB[CONVO_ID] = Conversation(
         messages_to_user=[],
         messages_to_agent=[],
         outputs=outputs,
