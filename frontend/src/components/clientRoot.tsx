@@ -10,6 +10,9 @@ import styles from "./promptScreen.module.css";
 import React, { use, useEffect, useRef, useState } from "react";
 import { IconMicrophone, IconMicrophoneFilled } from "@tabler/icons-react";
 import { StoryScreen } from "./StoryScreen/StoryScreen";
+import { WelcomeScreen } from "./WelcomeScreen/WelcomeScreen";
+import { MenuScreen } from "./MenuScreen/MenuScreen";
+import { SimpleScreen } from "./SimpleScreen/SimpleScreen";
 
 const ROOT = "http://localhost:8000";
 const queryClient = new QueryClient();
@@ -22,55 +25,121 @@ export function ClientRoot() {
   );
 }
 
-export function InnerComponent() {
-  const q = useQuery({
-    queryKey: ["story"],
-    queryFn: async () => {
-      const res = await fetch("https://jsonplaceholder.typicode.com/todos/1");
-      const json = res.json();
-      return json;
-    },
-  });
+type AppState =
+  | { state: "welcome" }
+  | { state: "prompt" }
+  | { state: "story"; step: number }
+  | { state: "activities" }
+  | { state: "lesson" }
+  | { state: "artProject" }
+  | { state: "menu" };
 
-  return (
-    // <StoryScreen imageUrl="http://picsum.photos/300/300" story="hello" />
-    <PromptScreen question="How are you today? Could you tell me something about yourself?" />
-  );
+export function InnerComponent() {
+  const [state, setAppState] = useState<AppState>({ state: "welcome" });
+  const [convoId, setConvoId] = useState<string | null>(null);
+
+  if (state.state === "welcome") {
+    return (
+      <WelcomeScreen
+        onStart={() => {
+          async function fetchConvoId() {
+            try {
+              const response = await fetch(ROOT + "/start", {
+                method: "POST",
+              });
+              if (!response.ok) throw new Error("Convo failed");
+              const data = await response.json();
+              console.log(data);
+              setConvoId(data.conversation_id);
+              console.log("Convo started successfully");
+            } catch (error) {
+              console.error("Convo failed", error);
+            }
+          }
+          fetchConvoId().then(() => {
+            setAppState({ state: "prompt" });
+          });
+        }}
+      />
+    );
+  }
+
+  if (state.state === "prompt") {
+    return <PromptScreen convoId={convoId!} />;
+  }
+
+  if (state.state === "story") {
+    return (
+      <StoryScreen
+        imageUrl="http://picsum.photos/300/300"
+        story="hello"
+        onNext={() => setAppState({ state: "menu" })}
+      />
+    );
+  }
+
+  if (state.state === "activities") {
+    return (
+      <SimpleScreen
+        text="This is a demo activities screen."
+        onNext={() => setAppState({ state: "menu" })}
+      />
+    );
+  }
+
+  if (state.state === "lesson") {
+    return (
+      <SimpleScreen
+        text="This is a demo lesson screen."
+        onNext={() => setAppState({ state: "menu" })}
+      />
+    );
+  }
+
+  if (state.state === "artProject") {
+    return (
+      <SimpleScreen
+        text="This is a demo art project screen."
+        onNext={() => setAppState({ state: "menu" })}
+      />
+    );
+  }
+
+  if (state.state === "menu") {
+    return (
+      <MenuScreen
+        onStory={() => setAppState({ state: "story", step: 0 })}
+        onActivities={() => setAppState({ state: "activities" })}
+        onLesson={() => setAppState({ state: "lesson" })}
+        onArtProject={() => setAppState({ state: "artProject" })}
+        onRegenerate={() => {
+          console.log("Regenerate clicked");
+        }}
+        onComplete={() => {
+          console.log("Complete clicked");
+        }}
+      />
+    );
+  }
+
+  return null;
 }
 
 export interface PromptScreenProps {
-  question?: string;
+  convoId: string;
 }
 
-const useRecorder = (options: {convoId: string | undefined; setConvoId: React.Dispatch<React.SetStateAction<string | undefined>>}) => {
+const useRecorder = (options: { convoId: string }) => {
   let mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   let recordedChunks: Blob[] = [];
 
   const [isRecording, setIsRecording] = useState(false);
 
-  useEffect(() => {
-    async function fetchConvoId() {
-      try {
-        const response = await fetch(ROOT + "/start", {
-          method: "POST",
-        });
-        if (!response.ok) throw new Error("Convo failed");
-        const data = await response.json();
-        console.log(data);
-        options.setConvoId(data.conversation_id);
-        console.log("Convo started successfully");
-      } catch (error) {
-        console.error("Convo failed", error);
-      }
-    }
-    fetchConvoId();
-  }, []);
-
   const mutation = useMutation({
     mutationFn: async (audioBlob: Blob) => {
       console.log(audioBlob);
-      console.log(options.convoId)
+      console.log(options.convoId);
 
       const playback = false;
       if (playback) {
@@ -82,10 +151,13 @@ const useRecorder = (options: {convoId: string | undefined; setConvoId: React.Di
       const formData = new FormData();
       formData.append("audio", audioBlob, "recording.webm");
       try {
-        const response = await fetch(ROOT + "/message/audio/" + options.convoId, {
-          method: "POST",
-          body: formData,
-        });
+        const response = await fetch(
+          ROOT + "/message/audio/" + options.convoId,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
         if (!response.ok) throw new Error("Upload failed");
         console.log("Upload successful");
       } catch (error) {
@@ -125,9 +197,11 @@ const useRecorder = (options: {convoId: string | undefined; setConvoId: React.Di
 };
 
 export function PromptScreen(props: PromptScreenProps) {
+  const { convoId } = props;
 
-  const [convoId, setConvoId] = useState<string | undefined>(undefined);
-  const recorder = useRecorder({convoId, setConvoId});
+  const [prompt, setPrompt] = useState<string | null>(null);
+  const recorder = useRecorder({ convoId });
+
   useEffect(() => {
     if (!convoId) return;
     async function fetchAudio() {
@@ -139,6 +213,7 @@ export function PromptScreen(props: PromptScreenProps) {
         const data = await response.json();
         if (!data) return;
         const audio = data.audio_base64;
+        setPrompt(data.text);
         const audioUrl = "data:audio/webm;base64," + audio;
         const audioElement = new Audio(audioUrl);
 
@@ -153,28 +228,37 @@ export function PromptScreen(props: PromptScreenProps) {
     }, 1000);
     return () => {
       clearInterval(interval);
-    }
+    };
   }, [convoId]);
+
   return (
     <div className={styles.container}>
-      <div className={styles.message}>{props.question}</div>
-      <div className={styles.recordContainer}>
-        {recorder.isRecording ? (
-          <button
-            className={`${styles.roundButton} ${styles.active}`}
-            onClick={recorder.stopRecording}
-          >
-            <IconMicrophoneFilled />
-          </button>
-        ) : (
-          <button
-            className={`${styles.roundButton}`}
-            onClick={recorder.startRecording}
-          >
-            <IconMicrophone />
-          </button>
-        )}
-      </div>
+      {prompt === null ? (
+        <div className={styles.loaderContainer}>
+          <div className={styles.loader} />
+        </div>
+      ) : (
+        <>
+          <div className={styles.message}>{prompt}</div>
+          <div className={styles.recordContainer}>
+            {recorder.isRecording ? (
+              <button
+                className={`${styles.roundButton} ${styles.active}`}
+                onClick={recorder.stopRecording}
+              >
+                <IconMicrophoneFilled />
+              </button>
+            ) : (
+              <button
+                className={`${styles.roundButton}`}
+                onClick={recorder.startRecording}
+              >
+                <IconMicrophone />
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

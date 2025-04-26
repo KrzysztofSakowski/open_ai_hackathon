@@ -1,33 +1,15 @@
+import asyncio
 import base64
 import io
 import os
 import tempfile
-import asyncio
 import uuid
-from settings import RUN_WITHOUT_VOICE
-from convert_mp3 import convert_webm_to_mp3
-from fastapi import (
-    FastAPI,
-    HTTPException,
-    Depends,
-    status,
-    Path,
-    Form,
-    UploadFile,
-)
+
+from fastapi import FastAPI, Form, HTTPException, Path, UploadFile, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-CONVO_DB = {}
-CONVO_ID = 0
-
-import uuid
-from typing import List, Optional
-
-import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, status
-from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.cors import CORSMiddleware
+from settings import env_settings
 
 
 class EntryModel(BaseModel):
@@ -36,6 +18,9 @@ class EntryModel(BaseModel):
 
 
 CONVO_DB: dict[str, EntryModel] = {}
+CONVO_ID = 0
+
+
 # Initialize FastAPI app
 app = FastAPI(
     title="My FastAPI Application",
@@ -75,7 +60,7 @@ async def start():
 
 
 def post_message(convo_id: str, message: str):
-    if RUN_WITHOUT_VOICE:
+    if env_settings.run_in_cli:
         print("Posting message without voice...")
         print("CONVO_ID: ", convo_id)
         print("Message: ", message)
@@ -93,9 +78,10 @@ def post_message(convo_id: str, message: str):
 
 
 async def wait_for_user_message(convo_id: str):
-    if RUN_WITHOUT_VOICE:
-        input("Waiting for user message: ")
-        return
+    if env_settings.run_in_cli:
+        # Run blocking input() in a separate thread
+        user_input = await asyncio.to_thread(input, "Waiting for user message: ")
+        return user_input
     print("Waiting for user message...")
     print("CONVO_ID: ", convo_id)
     global CONVO_DB
@@ -150,12 +136,13 @@ async def get_state(convo_id: str = Path()):
             # Return the base64-encoded audio
             return {
                 "audio_base64": audio_base64,
+                "text": msg,
                 "format": "mp3",  # OpenAI returns MP3 by default
             }
 
         except Exception as e:
             return None
-        return
+
     return None
 
 
@@ -181,9 +168,7 @@ async def send_message(convo_id: str = Path(), audio: UploadFile = Form()):
     try:
         # Open the temporary file and send to OpenAI for transcription
         with open(temp_file_path, "rb") as file:
-            transcription = client.audio.transcriptions.create(
-                model="gpt-4o-transcribe", file=file
-            )
+            transcription = client.audio.transcriptions.create(model="gpt-4o-transcribe", file=file)
 
         print(transcription.text)
         # Return the transcription result
@@ -193,4 +178,3 @@ async def send_message(convo_id: str = Path(), audio: UploadFile = Form()):
     finally:
         # Clean up the temporary file
         os.unlink(temp_file_path)
-    return {"message": "Message sent successfully"}
