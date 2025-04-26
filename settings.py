@@ -21,3 +21,5 @@ class EnvSettings(BaseModel):
 env_settings = EnvSettings.load()
 
 openai_client = AsyncOpenAI(api_key=env_settings.openai_api_key)
+
+RUN_WITHOUT_VOICE = False
