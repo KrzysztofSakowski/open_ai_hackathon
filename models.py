@@ -30,11 +30,18 @@ class EventModel(BaseModel):
     address: str | None = None
 
 
+class StoryContinuationOutput(BaseModel):
+    next_scene: str
+    option1: str
+    option2: str
+
+
 class FinalOutput(BaseModel):
-    story: str
+    story: str | None = None
     story_image_paths: list[str]
     lesson: str
     reasoning: str
     plan_for_evening: str
     knowledge: Knowledge
     event: EventModel | None
+    interactive_story_start: StoryContinuationOutput | None = None

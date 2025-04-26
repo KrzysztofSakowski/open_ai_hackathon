@@ -70,7 +70,7 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
                 likes=["mystery", "magic", "turtles", "bats"],
                 dislikes=["sports"],
             ),
-            theme="Turtles with Mark on a hike through a magical place.",
+            theme="Interactive story about Turtles with Mark on a hike through a magical place.",
         )
 
     # Add imports locally
@@ -79,10 +79,11 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
     # if wrapper.context.existing_convo:
     #     return CONVO_DB[wrapper.context.convo_id].knowledge
 
-    post_message(
-        wrapper.context.convo_id,
-        AudioMessageToUser(audio_message="Tell me something about yourselves."),
-    )
+    if not env_settings.run_in_cli:
+        post_message(
+            wrapper.context.convo_id,
+            AudioMessageToUser(audio_message="Tell me something about yourselves."),
+        )
     print("Tell me something about yourselves:")
     initial_description = await wait_for_user_message(wrapper.context.convo_id)
     # Ensure initial_description is not None

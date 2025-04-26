@@ -13,6 +13,7 @@ class EnvSettings(BaseModel):
 
     openai_api_key: str
     run_in_cli: bool
+    preset_knowledge: bool
 
     @classmethod
     def load(cls, env_path: str = ".env") -> Self:

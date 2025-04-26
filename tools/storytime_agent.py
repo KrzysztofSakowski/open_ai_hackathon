@@ -13,6 +13,7 @@ from agents import (
 )
 from tools.onboarding_agent import Knowledge, PersonEntry, Address
 from api import post_message
+from models import StoryContinuationOutput
 
 
 class ViolentStoryOutput(BaseModel):
@@ -103,6 +104,29 @@ story_outline_agent = Agent(
     name="story_outline_agent",
     instructions="Generate a very short children story outline based on the user's input.",
 )
+
+# --- Interactive Story Components ---
+
+story_continuation_agent = Agent(
+    name="story_continuation_agent",
+    instructions="""
+You are an interactive storyteller for children.
+Given the story so far and the user's chosen path (or an initial topic), generate the next short scene (1-2 paragraphs) of the story.
+Then, provide two distinct and engaging options for how the story could continue next.
+
+Input will be structured as:
+- Topic: [Initial topic if starting]
+- Story History: [The story generated so far]
+- Chosen Path: [The option chosen by the user in the previous step, or 'Start' if beginning]
+
+Output should be the next scene and two new options.
+Keep the tone light, engaging, and appropriate for children.
+""",
+    output_type=StoryContinuationOutput,
+    input_guardrails=[violent_story_guardrail],  # Reuse the violence check
+)
+
+# --- End Interactive Story Components ---
 
 
 if __name__ == "__main__":
