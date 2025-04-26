@@ -18,11 +18,9 @@ async def generate_audio(client: AsyncOpenAI, prompt: str, output_path) -> None:
         await response.stream_to_file(output_path)
 
 
-async def generate_audio_from_storyboard(
-    client: AsyncOpenAI, story_board: StoryboardOutput
-) -> None:
+async def generate_audio_from_storyboard(client: AsyncOpenAI, story_board: StoryboardOutput) -> None:
     """Generate audio from the storyboard output."""
-    output_dir = Path("sample_audio")
+    output_dir = Path("static/sample_audio")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     async with asyncio.TaskGroup() as tg:

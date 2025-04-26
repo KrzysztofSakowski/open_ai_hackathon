@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 from agents import Agent, Runner, WebSearchTool
 from pydantic import BaseModel
@@ -33,9 +34,7 @@ parent_assistant_agent = Agent[ConvoInfo](
     4. A list of resources that the parent can use to learn more about the child's interests.
 
     Make sure to call generate_lesson_tool to generate a lesson plan based on the user's input, include full lesson plan after: "Lesson".
-    Make sure to call get_story to generate a short story based on the user's input.
-    Make sure to call get_storyboard to generate story baord based on the story board.
-    Make sure to call generate_image_from_storyboard to generate image based on the story board.
+    Always call get_story to generate a short story based on the user's input.
     Make sure to call find_events_tool to find events for the child based on the user's input.
     Make sure to include the reasoning behind your suggestions.
     """,
@@ -50,8 +49,6 @@ parent_assistant_agent = Agent[ConvoInfo](
         ),
         WebSearchTool(),
         get_story,
-        get_storyboard,
-        generate_image_from_storyboard,
     ],
 )
 
@@ -84,7 +81,9 @@ async def main_agent(convo_id: str) -> None:
     from api import post_message, CONVO_DB
     from api import OutputMessageToUser
 
-    post_message(convo_id, OutputMessageToUser(final_output=final_plan.final_output))
+    final_output = json.dumps({**CONVO_DB[convo_id].final_output, **final_plan.final_output.model_dump()})
+    print("Final output:", final_output)
+    post_message(convo_id, OutputMessageToUser(final_output=final_output))
     CONVO_DB[convo_id].outputs.append(final_plan.final_output)
 
     print("Final output appended to CONVO_DB for convo_id:", convo_id)

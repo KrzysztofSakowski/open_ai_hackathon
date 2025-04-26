@@ -1,7 +1,8 @@
 import asyncio
 
-from agents import Agent, Runner, function_tool
+from agents import Agent, Runner, function_tool, RunContextWrapper
 from pydantic import BaseModel
+from models import ConvoInfo
 
 
 class Scene(BaseModel):
@@ -34,11 +35,11 @@ class StoryboardOutput(BaseModel):
 
 
 @function_tool
-async def get_storyboard(story: str) -> StoryboardOutput:
-    return await _get_storyboard(story)
+async def get_storyboard(wrapper: RunContextWrapper[ConvoInfo], story: str) -> StoryboardOutput:
+    return await _get_storyboard(wrapper, story)
 
 
-async def _get_storyboard(story: str) -> StoryboardOutput:
+async def _get_storyboard(wrapper: RunContextWrapper[ConvoInfo], story: str) -> StoryboardOutput:
     input_prompt = f"""
 The story is as follows:
 {story}
@@ -61,11 +62,19 @@ For each moment, create a scene with the following structure:
         print(f"Scene Narration: {scene.narration}")
         print(f"Scene Prompt: {scene.prompt}")
 
-    return StoryboardOutput(
+    output = StoryboardOutput(
         images=[scene.prompt for scene in storyboard_result.final_output.scene],
         narration=[scene.narration for scene in storyboard_result.final_output.scene],
         main_character_description=storyboard_result.final_output.main_character_description,
     )
+    from api import add_to_output
+
+    add_to_output(
+        wrapper.context.convo_id,
+        "storyboard",
+        output.model_dump_json(),
+    )
+    return output
 
 
 if __name__ == "__main__":

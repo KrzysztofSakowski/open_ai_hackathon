@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 from pydantic import BaseModel
 
@@ -13,6 +14,10 @@ from agents import (
 )
 from tools.onboarding_agent import Knowledge, PersonEntry, Address
 from api import post_message
+from models import ConvoInfo
+from tools.storyboard_agent import _get_storyboard
+from images import _generate_image_from_storyboard
+from audio import generate_audio_from_storyboard
 
 
 class ViolentStoryOutput(BaseModel):
@@ -67,11 +72,11 @@ class StoryOutput(BaseModel):
 
 
 @function_tool
-async def get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
-    return await _get_story(knowledge, theme)
+async def get_story(wrapper: RunContextWrapper[ConvoInfo], knowledge: Knowledge, theme: str) -> StoryOutput:
+    return await _get_story(wrapper, knowledge, theme)
 
 
-async def _get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
+async def _get_story(wrapper: RunContextWrapper[ConvoInfo], knowledge: Knowledge, theme: str) -> StoryOutput:
     input_prompt = f"""
     Here is some helpful data: {knowledge.model_dump_json()}.
     Please make sure that story incorporates that knowledge.
@@ -79,6 +84,7 @@ async def _get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
     Remember: Generate a story with the theme: {theme}.
 """
 
+    print("Generating story outline...")
     # Ensure the entire workflow is a single trace
     # 1. Generate an outline
     outline_result = await Runner.run(
@@ -92,6 +98,29 @@ async def _get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
         outline_result.final_output,
     )
     print(f"Story: {story_result.final_output}")
+
+    storyboard_output = await _get_storyboard(wrapper, story_result.final_output)
+    print("Storyboard generated: " + storyboard_output.model_dump_json())
+
+    print("Generating images...")
+    images_output = await _generate_image_from_storyboard(
+        storyboard_output,
+    )
+    print("Generating audio...")
+    audio_output = await generate_audio_from_storyboard(storyboard_output)
+
+    from api import add_to_output
+
+    add_to_output(
+        wrapper.context.convo_id,
+        "story_images",
+        json.dumps(images_output),
+    )
+    add_to_output(
+        wrapper.context.convo_id,
+        "story_audio",
+        json.dumps(audio_output),
+    )
 
     return StoryOutput(
         story=story_result.final_output,

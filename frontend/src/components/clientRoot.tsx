@@ -4,7 +4,6 @@ import {
   QueryClient,
   QueryClientProvider,
   useMutation,
-  useQuery,
 } from "@tanstack/react-query";
 import styles from "./promptScreen.module.css";
 import React, { use, useEffect, useRef, useState } from "react";
@@ -14,6 +13,7 @@ import { WelcomeScreen } from "./WelcomeScreen/WelcomeScreen";
 import { MenuScreen } from "./MenuScreen/MenuScreen";
 import { SimpleScreen } from "./SimpleScreen/SimpleScreen";
 import { MapScreen } from "./MapScreen/MapScreen";
+import { PhotoScreen } from "./PhotoScreen/PhotoScreen";
 import { v4 as uuid } from "uuid";
 
 const ROOT = "http://localhost:8000";
@@ -29,6 +29,7 @@ export function ClientRoot() {
 
 type AppState =
   | { state: "welcome" }
+  | { state: "photo" }
   | { state: "prompt" }
   | { state: "story"; step: number }
   | { state: "activities" }
@@ -73,8 +74,28 @@ export function InnerComponent() {
             }
           }
           fetchConvoId().then(() => {
-            setAppState({ state: "prompt" });
+            const ASK_FOR_SELFIE = false;
+            if (ASK_FOR_SELFIE) {
+              setAppState({ state: "photo" });
+            } else {
+              setAppState({ state: "prompt" });
+            }
           });
+        }}
+      />
+    );
+  }
+
+  if (state.state === "photo") {
+    return (
+      <PhotoScreen
+        onCapture={(dataUrl) => {
+          console.log({ dataUrl });
+          setAppState({ state: "prompt" });
+        }}
+        onSkip={() => {
+          console.log("Selfie skipped");
+          setAppState({ state: "prompt" });
         }}
       />
     );
@@ -229,6 +250,7 @@ export function PromptScreen(props: PromptScreenProps) {
         if (!response.ok) throw new Error("Audio failed");
         const data = await response.json();
         if (!data) return;
+        console.log(data);
         const audio = data.audio_base64;
         setPrompt(data.text);
         const audioUrl = "data:audio/webm;base64," + audio;
