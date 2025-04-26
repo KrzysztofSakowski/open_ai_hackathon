@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
 from pydantic import BaseModel
-from api import post_message, wait_for_user_message
+from models import Address, PersonEntry, Knowledge
 
 from agents import (
     Agent,
@@ -17,25 +16,6 @@ from agents import (
 
 class ConvoInfo(BaseModel):
     convo_id: str
-
-
-class Address(BaseModel):
-    country: str | None
-    city: str | None
-
-
-class PersonEntry(BaseModel):
-    name: str | None
-    age: int | None
-    likes: list[str]
-    dislikes: list[str]
-
-
-class Knowledge(BaseModel):
-    address: Address | None = None
-    parent: PersonEntry | None = None
-    child: PersonEntry | None = None
-    theme: str | None = None
 
 
 class FollowUpQuestion(BaseModel):
@@ -68,6 +48,9 @@ knowledge_updater = Agent(
 
 @function_tool
 async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
+    # Add imports locally
+    from api import wait_for_user_message, post_message
+
     print("Tell me something about yourselves:")
     initial_description = await wait_for_user_message(wrapper.context.convo_id)
     # Ensure initial_description is not None

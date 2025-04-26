@@ -10,10 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from settings import env_settings
+from models import FinalOutput
+from typing import Literal
 
 
 class MessageToUser(BaseModel):
-    type: str
+    type: Literal["audio", "output"]
 
 
 class AudioMessageToUser(MessageToUser):
@@ -23,8 +25,7 @@ class AudioMessageToUser(MessageToUser):
 
 class OutputMessageToUser(MessageToUser):
     type: str = "output"
-    story: str
-    event: str
+    final_output: FinalOutput
 
 
 class EntryModel(BaseModel):
@@ -78,7 +79,7 @@ def post_message(convo_id: str, message: MessageToUser):
     if env_settings.run_in_cli:
         print("Posting message without voice...")
         print("CONVO_ID: ", convo_id)
-        print("Message: ", message.dict())
+        print("Message: ", message.model_dump())
         return
     print("Posting message...")
     global CONVO_DB
@@ -126,7 +127,7 @@ async def get_state(convo_id: str = Path()):
             detail=f"Conversation with ID {convo_id} not found",
         )
     if CONVO_DB[convo_id].messages_to_user:
-        msg = CONVO_DB[convo_id].messages_to_user.pop(0)
+        msg: MessageToUser = CONVO_DB[convo_id].messages_to_user.pop(0)
 
         if msg.type == "audio":
             try:
@@ -186,9 +187,7 @@ async def send_message(convo_id: str = Path(), audio: UploadFile = Form()):
     try:
         # Open the temporary file and send to OpenAI for transcription
         with open(temp_file_path, "rb") as file:
-            transcription = client.audio.transcriptions.create(
-                model="gpt-4o-transcribe", file=file
-            )
+            transcription = client.audio.transcriptions.create(model="gpt-4o-transcribe", file=file)
 
         print(transcription.text)
         # Return the transcription result

@@ -9,16 +9,7 @@ from tools.generate_lesson_tool import lesson_generator_agent
 from tools.onboarding_agent import ConvoInfo, Knowledge, onboard_user
 from tools.storyboard_agent import get_storyboard
 from tools.storytime_agent import get_story
-
-
-class FinalOutput(BaseModel):
-    story: str
-    story_image_paths: list[str]
-    lesson: str
-    reasoning: str
-    plan_for_evening: str
-    knowledge: Knowledge
-    event: EventModel | None
+from models import FinalOutput
 
 
 parent_assistant_agent = Agent[ConvoInfo](
@@ -87,6 +78,11 @@ async def main_agent(convo_id: str) -> None:
     print("KNOWLEDGE")
     print(final_plan.final_output.knowledge)
     print("END OF PLAN")
+
+    from api import post_message
+    from api import OutputMessageToUser
+
+    post_message(convo_id, OutputMessageToUser(final_output=final_plan.final_output))
 
 
 if __name__ == "__main__":
