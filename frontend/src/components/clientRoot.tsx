@@ -107,7 +107,7 @@ const useRecorder = () => {
 export function PromptScreen(props: PromptScreenProps) {
   const recorder = useRecorder();
   return (
-    <div>
+    <div className={styles.container}>
       <div className={styles.message}>{props.question}</div>
       <div className={styles.recordContainer}>
         {recorder.isRecording ? (
