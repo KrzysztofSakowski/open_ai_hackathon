@@ -124,6 +124,7 @@ export function InnerComponent() {
     const storyText = output?.text.storyboard.narration[step];
     return (
       <StoryScreen
+        videoUrl={output?.text.story_video?.at(step) ?? null}
         imageUrl={ROOT + "/" + output!.text.story_images.image_paths[step + 1]!}
         audioUrl={ROOT + "/" + output!.text.story_audio[step]!}
         story={storyText!}

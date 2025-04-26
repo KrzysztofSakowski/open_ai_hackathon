@@ -7,19 +7,26 @@ import { IconArrowRight, IconVolume2 } from "@tabler/icons-react";
 export interface StoryScreenProps {
   story: string;
   audioUrl: string | null;
+  videoUrl: string | null;
   imageUrl: string | null;
   onNext: () => void;
 }
 
 export function StoryScreen({
   story,
+  videoUrl,
   audioUrl,
   imageUrl,
   onNext,
 }: StoryScreenProps) {
+  console.log({ story, videoUrl });
   const elements = [
     <div key="image" className={styles.centeredCell}>
-      {imageUrl && <img className={styles.image} src={imageUrl} />}
+      {videoUrl ? (
+        <video className={styles.video} src={videoUrl} autoPlay loop />
+      ) : (
+        imageUrl && <img className={styles.image} src={imageUrl} />
+      )}
     </div>,
     <div key="story" className={`${styles.centeredCell} ${styles.storyText}`}>
       {story}
@@ -40,6 +47,8 @@ export function StoryScreen({
       return;
     }
     const a = new Audio(audioUrl);
+    a.play();
+    setIsPlaying(true);
     a.onended = () => setIsPlaying(false);
     setAudioEl(a);
     return () => {
