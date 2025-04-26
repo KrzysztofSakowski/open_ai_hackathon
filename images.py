@@ -1,7 +1,7 @@
 import asyncio
 import base64
-from pathlib import Path
 import uuid
+from pathlib import Path
 
 from openai import OpenAI
 
@@ -40,12 +40,16 @@ def generate_image_from_storyboard(client, x: StoryboardOutput):
     output_dir = Path("sample_images") / str(unique_id)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    images = []
-    for i, scene in enumerate(x.images):
-        print(f"Generating image {i}")
+    hero_image_path = output_dir / "img_0.png"
+    generate_image(client, prompt=x.main_character_description, output_path=hero_image_path)
 
-        image_path = output_dir /f"img_{i}.png"
-        generate_image(client, prompt=scene, output_path=image_path)
+    images = []
+    for i, scene in enumerate(x.images, start=1):
+        print(f"Generating image {i}")
+        image_path = output_dir / f"img_{i}.png"
+        generate_image_from_img(
+            client, prompt=scene, image_path=hero_image_path, output_path=image_path
+        )
         images.append(image_path)
     return images
 
