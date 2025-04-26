@@ -64,10 +64,11 @@ async def start(body: StartBody):
 
     CONVO_ID = body.conversation_id or str(uuid.uuid4())
     if CONVO_ID in CONVO_DB:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Conversation ID already exists",
-        )
+        del CONVO_DB[CONVO_ID]
+        # raise HTTPException(
+        #     status_code=status.HTTP_400_BAD_REQUEST,
+        #     detail="Conversation ID already exists",
+        # )
 
     CONVO_DB[CONVO_ID] = EntryModel(messages_to_user=[], messages_to_agent=[])
 
@@ -142,7 +143,7 @@ async def get_state(convo_id: str = Path()):
                 with client.audio.speech.with_streaming_response.create(
                     model="gpt-4o-mini-tts",
                     voice="coral",
-                    input=msg,
+                    input=msg.audio_message,
                     instructions="Speak in a cheerful and positive tone.",
                 ) as response:
                     # Stream to our buffer instead of a file
@@ -159,7 +160,7 @@ async def get_state(convo_id: str = Path()):
                 return {
                     "type": "audio",
                     "audio_base64": audio_base64,
-                    "text": msg,
+                    "text": msg.audio_message,
                     "format": "mp3",  # OpenAI returns MP3 by default
                 }
             except Exception as e:
