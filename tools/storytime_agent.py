@@ -139,25 +139,40 @@ story_outline_agent = Agent(
 )
 
 
+class Context(BaseModel):
+    context: ConvoInfo
+
+
 if __name__ == "__main__":
+    from api import CONVO_DB, EntryModel
+
+    CONVO_ID = "test_convo_id"
+    CONVO_DB[CONVO_ID] = EntryModel(
+        messages_to_user=[],
+        messages_to_agent=[],
+        outputs=[],
+        knowledge=Knowledge(
+            address=Address(city="Warsaw", country="Poland"),
+            parent=PersonEntry(
+                name="John Doe",
+                age=34,
+                likes=["cheese", "running"],
+                dislikes=["cats", "loud noises"],
+            ),
+            child=PersonEntry(
+                name="Little Timmy",
+                age=5,
+                likes=["playing", "adventures"],
+                dislikes=["bedtime", "vegetables"],
+            ),
+            theme="A brave little mouse",
+        ),
+        final_output={},
+    )
     asyncio.run(
         _get_story(
-            Knowledge(
-                address=Address(city="Warsaw", country="Poland"),
-                parent=PersonEntry(
-                    name="John Doe",
-                    age=34,
-                    likes=["cheese", "running"],
-                    dislikes=["cats", "loud noises"],
-                ),
-                child=PersonEntry(
-                    name="Little Timmy",
-                    age=5,
-                    likes=["playing", "adventures"],
-                    dislikes=["bedtime", "vegetables"],
-                ),
-                theme="A brave little mouse",
-            ),
+            Context(context=ConvoInfo(convo_id="test_convo_id")),
+            CONVO_DB[CONVO_ID].knowledge,
             "A brave little mouse",
         ),
     )
