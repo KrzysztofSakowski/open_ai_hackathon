@@ -78,7 +78,7 @@ async def main_agent(convo_id: str) -> None:
     print("KNOWLEDGE")
     print(final_plan.final_output.knowledge)
     print("INTERACTIVE")
-    # print(final_plan.final_output.interactive_story_start) # Field removed
+    print(final_plan.final_output.interactive_story_start) # Field removed
 
     print("END OF PLAN")
 
