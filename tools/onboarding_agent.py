@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from api import AudioMessageToUser, CONVO_DB
 from models import Address, PersonEntry, Knowledge
 
+from settings import env_settings
+
 from agents import (
     Agent,
     ItemHelpers,
@@ -50,6 +52,27 @@ knowledge_updater = Agent(
 
 @function_tool
 async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
+    if env_settings.preset_knowledge:
+        return Knowledge(
+            address=Address(
+                country="Poland",
+                city="Warsaw",
+            ),
+            parent=PersonEntry(
+                name="Helena",
+                age=40,
+                likes=["nature", "fishing", "sports", "hiking"],
+                dislikes=["spiders", "ants", "bats"],
+            ),
+            child=PersonEntry(
+                name="Mark",
+                age=10,
+                likes=["mystery", "magic", "turtles", "bats"],
+                dislikes=["sports"],
+            ),
+            theme="Turtles with Mark on a hike through a magical place.",
+        )
+
     # Add imports locally
     from api import wait_for_user_message, post_message
 
@@ -66,12 +89,14 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
     if initial_description is None:
         print("Warning: Received None for initial_description. Defaulting to empty string.")
         initial_description = ""
+
     print("initial_description: ", initial_description)
     initial_result = await Runner.run(
         initial_knowledge_builder,
         [{"content": initial_description, "role": "system"}],
     )
     current_knowledge = Knowledge.model_validate_json(ItemHelpers.text_message_outputs(initial_result.new_items))
+
     print("initial: ", current_knowledge)
 
     while True:
