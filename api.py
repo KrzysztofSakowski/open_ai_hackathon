@@ -228,7 +228,7 @@ async def send_message(convo_id: str = Path(), audio: UploadFile = Form()):
     try:
         # Open the temporary file and send to OpenAI for transcription
         with open(temp_file_path, "rb") as file:
-            transcription = client.audio.transcriptions.create(model="gpt-4o-transcribe", file=file)
+            transcription = client.audio.transcriptions.create(model="whisper-1", file=file)
 
         print(transcription.text)
         # Return the transcription result
