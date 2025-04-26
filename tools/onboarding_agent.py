@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass
 from pydantic import BaseModel
 from api import post_message, wait_for_user_message
 
@@ -9,7 +10,6 @@ from agents import (
     ItemHelpers,
     Runner,
     TResponseInputItem,
-    trace,
     function_tool,
     RunContextWrapper,
 )

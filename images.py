@@ -3,9 +3,15 @@ import base64
 import uuid
 from pathlib import Path
 
+from agents import function_tool
 from openai import AsyncOpenAI
+from pydantic import BaseModel
 
 from tools.storyboard_agent import StoryboardOutput, _get_storyboard
+
+
+class StoryImageOutput(BaseModel):
+    image_paths: list[str]
 
 
 async def generate_image(client: AsyncOpenAI, prompt: str, output_path: Path) -> None:
@@ -32,8 +38,10 @@ async def generate_image_from_img(client: AsyncOpenAI, prompt: str, image_path, 
     output_path.write_bytes(image_bytes)
 
 
-async def generate_image_from_storyboard(client: AsyncOpenAI, story_board: StoryboardOutput) -> None:
+@function_tool
+async def generate_image_from_storyboard(story_board: StoryboardOutput) -> StoryImageOutput:
     """Generate images from the storyboard output."""
+    client = AsyncOpenAI()
     output_dir = Path("sample_images") / str(uuid.uuid4())
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -57,9 +65,12 @@ async def generate_image_from_storyboard(client: AsyncOpenAI, story_board: Story
             for i, scene in enumerate(story_board.images, start=1)
         ]
 
+    return StoryImageOutput(
+        image_paths=[str(output_dir / f"img_{i}.png") for i in range(len(story_board.images) + 1)],
+    )
+
 
 async def test_1():
-    client = AsyncOpenAI()
     storyboard_output = await _get_storyboard(
         """
     **Dino Adventures in Rainbow Valley**
@@ -82,7 +93,7 @@ async def test_1():
 
     """
     )
-    await generate_image_from_storyboard(client, storyboard_output)
+    await generate_image_from_storyboard(storyboard_output)
 
 
 if __name__ == "__main__":

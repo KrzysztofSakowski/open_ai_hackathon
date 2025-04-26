@@ -1,25 +1,19 @@
 import asyncio
-from dataclasses import dataclass
-from settings import openai_client
-from tools.event_tool import find_events_for_child
 
-import asyncio
-
+from agents import Agent, Runner, WebSearchTool
 from pydantic import BaseModel
-from tools.generate_lesson_tool import lesson_generator_agent
-from tools.storytime_agent import get_story
-from tools.onboarding_agent import onboard_user, Knowledge, ConvoInfo
-from tools.event_tool import EventModel
 
-from agents import (
-    Agent,
-    Runner,
-    WebSearchTool,
-)
+from images import generate_image_from_storyboard
+from tools.event_tool import EventModel, find_events_for_child
+from tools.generate_lesson_tool import lesson_generator_agent
+from tools.onboarding_agent import ConvoInfo, Knowledge, onboard_user
+from tools.storyboard_agent import get_storyboard
+from tools.storytime_agent import get_story
 
 
 class FinalOutput(BaseModel):
     story: str
+    story_image_paths: list[str]
     lesson: str
     reasoning: str
     plan_for_evening: str
@@ -49,6 +43,8 @@ parent_assistant_agent = Agent[ConvoInfo](
 
     Make sure to call generate_lesson_tool to generate a lesson plan based on the user's input, include full lesson plan after: "Lesson".
     Make sure to call get_story to generate a short story based on the user's input.
+    Make sure to call get_storyboard to generate story baord based on the story board.
+    Make sure to call generate_image_from_storyboard to generate image based on the story board.
     Make sure to call find_events_tool to find events for the child based on the user's input.
     Make sure to include the reasoning behind your suggestions.
     """,
@@ -63,6 +59,8 @@ parent_assistant_agent = Agent[ConvoInfo](
         ),
         WebSearchTool(),
         get_story,
+        get_storyboard,
+        generate_image_from_storyboard,
     ],
 )
 
@@ -76,6 +74,8 @@ async def main_agent(convo_id: str) -> None:
     print("Final plan:")
     print("STORY")
     print(final_plan.final_output.story)
+    print("STORY IMAGE PATHS")
+    print(final_plan.final_output.story_image_paths)
     print("LESSON")
     print(final_plan.final_output.lesson)
     print("REASONING")
@@ -90,4 +90,4 @@ async def main_agent(convo_id: str) -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main_agent(convo_id="test"))
+    asyncio.run(main_agent(convo_id="test_convo_id"))
