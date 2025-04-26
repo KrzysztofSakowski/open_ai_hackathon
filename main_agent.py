@@ -86,3 +86,6 @@ async def main_agent(convo_id: str) -> None:
     print("KNOWLEDGE")
     print(final_plan.final_output.knowledge)
     print("END OF PLAN")
+
+if __name__ == "__main__":
+    asyncio.run(main_agent())
