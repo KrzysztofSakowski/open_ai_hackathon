@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "./menuScreen.module.css";
 import { IconThumbDown, IconCheck } from "@tabler/icons-react";
+import { ROOT } from "../constants";
 
 interface MenuScreenProps {
   onStory: () => void;
@@ -9,6 +10,7 @@ interface MenuScreenProps {
   onArtProject: () => void;
   onRegenerate: () => void;
   onComplete: () => void;
+  imageUrl: string | null;
 }
 
 export function MenuScreen({
@@ -18,12 +20,13 @@ export function MenuScreen({
   onArtProject,
   onRegenerate,
   onComplete,
+  imageUrl,
 }: MenuScreenProps) {
   return (
     <div className={styles.container}>
       <div className={styles.imageSlot}>
         <img
-          src="https://picsum.photos/seed/menu/800/400"
+          src={ROOT + "/" + imageUrl}
           alt="Placeholder"
           className={styles.image}
         />

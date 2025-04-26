@@ -6,14 +6,14 @@ import { IconArrowRight } from "@tabler/icons-react";
 
 export interface StoryScreenProps {
   story: string;
-  imageUrl: string;
+  imageUrl: string | null;
   onNext: () => void;
 }
 
 export function StoryScreen({ story, imageUrl, onNext }: StoryScreenProps) {
   const elements = [
     <div key="image" className={styles.centeredCell}>
-      <img className={styles.image} src={imageUrl} />
+      {imageUrl && <img className={styles.image} src={imageUrl} />}
     </div>,
     <div key="story" className={`${styles.centeredCell} ${styles.storyText}`}>
       {story}
