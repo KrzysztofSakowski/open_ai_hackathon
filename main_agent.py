@@ -78,9 +78,6 @@ async def main_agent(convo_id: str) -> None:
     print(final_plan.final_output.event)
     print("KNOWLEDGE")
     print(final_plan.final_output.knowledge)
-    print("INTERACTIVE")
-    print(final_plan.final_output.interactive_story_start)  # Field removed
-
     print("END OF PLAN")
 
     if env_settings.run_in_cli:
@@ -103,12 +100,12 @@ async def main_agent(convo_id: str) -> None:
 
 if __name__ == "__main__":
     env_settings.load()  # Sanity check env
-    
-    from api import CONVO_DB, EntryModel
+
+    from api import CONVO_DB, Conversation
     from tools.onboarding_agent import Knowledge, PersonEntry, Address
 
     CONVO_ID = "test_convo_id"
-    CONVO_DB[CONVO_ID] = EntryModel(
+    CONVO_DB[CONVO_ID] = Conversation(
         messages_to_user=[],
         messages_to_agent=[],
         outputs=[],
