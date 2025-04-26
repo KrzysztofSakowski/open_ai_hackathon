@@ -30,6 +30,11 @@ class EventModel(BaseModel):
     address: str | None = None
 
 
+class ConvoInfo(BaseModel):
+    convo_id: str
+    existing_convo: bool = False
+
+
 class FinalOutput(BaseModel):
     story: str
     story_image_paths: list[str]
