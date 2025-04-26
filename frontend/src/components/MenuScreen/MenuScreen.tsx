@@ -11,7 +11,14 @@ interface MenuScreenProps {
   onComplete: () => void;
 }
 
-export function MenuScreen({ onStory, onActivities, onLesson, onArtProject, onRegenerate, onComplete }: MenuScreenProps) {
+export function MenuScreen({
+  onStory,
+  onActivities,
+  onLesson,
+  onArtProject,
+  onRegenerate,
+  onComplete,
+}: MenuScreenProps) {
   return (
     <div className={styles.container}>
       <div className={styles.imageSlot}>
@@ -20,18 +27,44 @@ export function MenuScreen({ onStory, onActivities, onLesson, onArtProject, onRe
           alt="Placeholder"
           className={styles.image}
         />
-        <button className={`${styles.iconButton} ${styles.left}`} onClick={onRegenerate}>
+        <button
+          className={`${styles.iconButton} ${styles.left}`}
+          onClick={onRegenerate}
+        >
           <IconThumbDown />
         </button>
-        <button className={`${styles.iconButton} ${styles.right}`} onClick={onComplete}>
+        <button
+          className={`${styles.iconButton} ${styles.right}`}
+          onClick={onComplete}
+        >
           <IconCheck />
         </button>
       </div>
       <div className={styles.buttonGrid}>
-        <button className={`${styles.button} ${styles.story}`} onClick={onStory}>Story</button>
-        <button className={`${styles.button} ${styles.activities}`} onClick={onActivities}>Activities</button>
-        <button className={`${styles.button} ${styles.lesson}`} onClick={onLesson}>Lesson</button>
-        <button className={`${styles.button} ${styles.artProject}`} onClick={onArtProject}>Art project</button>
+        <button
+          className={`${styles.button} ${styles.story}`}
+          onClick={onStory}
+        >
+          Story
+        </button>
+        <button
+          className={`${styles.button} ${styles.activities}`}
+          onClick={onActivities}
+        >
+          Activities
+        </button>
+        <button
+          className={`${styles.button} ${styles.lesson}`}
+          onClick={onLesson}
+        >
+          Lesson
+        </button>
+        <button
+          className={`${styles.button} ${styles.artProject}`}
+          onClick={onArtProject}
+        >
+          Plan for evening
+        </button>
       </div>
     </div>
   );

@@ -1,7 +1,10 @@
 import asyncio
 import base64
+import datetime
+import time
 import uuid
 from pathlib import Path
+from retry import exponential_backoff
 
 from agents import function_tool
 from openai import AsyncOpenAI
@@ -14,7 +17,9 @@ class StoryImageOutput(BaseModel):
     image_paths: list[str]
 
 
+@exponential_backoff()
 async def generate_image(client: AsyncOpenAI, prompt: str, output_path: Path) -> None:
+    print(f"Generating image from {output_path} with prompt: {prompt}")
     result = await client.images.generate(model="gpt-image-1", prompt=prompt, n=1, size="1024x1024")
     if not result.data:
         raise ValueError("No image data returned from OpenAI API")
@@ -26,7 +31,10 @@ async def generate_image(client: AsyncOpenAI, prompt: str, output_path: Path) ->
     output_path.write_bytes(image_bytes)
 
 
-async def generate_image_from_img(client: AsyncOpenAI, prompt: str, image_path, output_path) -> None:
+@exponential_backoff()
+async def generate_image_from_img(client: AsyncOpenAI, prompt: str, image_path: Path, output_path: Path) -> None:
+    assert image_path.exists(), f"Image {image_path} does not exist."
+    print(f"Generating image from {output_path} with prompt: {prompt}")
     result = await client.images.edit(model="gpt-image-1", image=[open(image_path, "rb")], prompt=prompt)
     if not result.data:
         raise ValueError("No image data returned from OpenAI API")
@@ -39,15 +47,27 @@ async def generate_image_from_img(client: AsyncOpenAI, prompt: str, image_path, 
 
 
 @function_tool
-async def generate_image_from_storyboard(story_board: StoryboardOutput) -> StoryImageOutput:
+async def generate_image_from_storyboard(
+    story_board: StoryboardOutput,
+) -> StoryImageOutput:
+    return await _generate_image_from_storyboard(story_board)
+
+
+async def _generate_image_from_storyboard(
+    story_board: StoryboardOutput,
+) -> StoryImageOutput:
     """Generate images from the storyboard output."""
     client = AsyncOpenAI()
-    output_dir = Path("sample_images") / str(uuid.uuid4())
+    output_dir = Path("static/sample_images") / datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    print(f"Generating images in {output_dir}")
+    start_time = time.time()
+
     hero_image_path = output_dir / "img_0.png"
-    await generate_image(
+    await generate_image_from_img(
         client,
+        image_path=Path("static/non_existing_child.jpg"),
         prompt=story_board.main_character_description,
         output_path=hero_image_path,
     )
@@ -64,6 +84,9 @@ async def generate_image_from_storyboard(story_board: StoryboardOutput) -> Story
             )
             for i, scene in enumerate(story_board.images, start=1)
         ]
+
+    print(f"Generated images {len(story_board.images) + 1} in {output_dir}, took: ")
+    print(f"Time taken: {(time.time() - start_time) / 60} minutes")
 
     return StoryImageOutput(
         image_paths=[str(output_dir / f"img_{i}.png") for i in range(len(story_board.images) + 1)],
@@ -93,7 +116,7 @@ async def test_1():
 
     """
     )
-    await generate_image_from_storyboard(storyboard_output)
+    await _generate_image_from_storyboard(storyboard_output)
 
 
 if __name__ == "__main__":

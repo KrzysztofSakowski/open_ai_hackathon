@@ -1,4 +1,6 @@
 import asyncio
+import json
+from pathlib import Path
 
 from pydantic import BaseModel
 
@@ -13,6 +15,12 @@ from agents import (
 )
 from tools.onboarding_agent import Knowledge, PersonEntry, Address
 from models import StoryContinuationOutput, InteractiveTurnOutput
+from api import post_message
+from models import ConvoInfo
+from tools.storyboard_agent import _get_storyboard
+from images import _generate_image_from_storyboard
+from audio import generate_audio_from_storyboard
+from video import generate_videos
 
 
 class ViolentStoryOutput(BaseModel):
@@ -67,18 +75,28 @@ class StoryOutput(BaseModel):
 
 
 @function_tool
-async def get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
-    return await _get_story(knowledge, theme)
+async def get_story(wrapper: RunContextWrapper[ConvoInfo], knowledge: Knowledge, theme: str) -> StoryOutput:
+    return await _get_story(wrapper, knowledge, theme)
 
 
-async def _get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
+async def _get_story(wrapper: RunContextWrapper[ConvoInfo], knowledge: Knowledge, theme: str) -> StoryOutput:
     input_prompt = f"""
     Here is some helpful data: {knowledge.model_dump_json()}.
-    Please make sure that story incorporates that knowledge.
+    You can name characters like parent and child, and use the theme as a base for the story.
+    You can locate the story in the address provided.
+
+    But DO NOT use make humans the main characters of the story.
+    The story should be a short children's story, with a clear beginning, middle, and end.
+    The story should be engaging and suitable for children, with a positive message or moral.
+    The story should be no more than 500 words long.
+    The story should be written in a simple and clear language, with short sentences and paragraphs.
+    The story should be imaginative and creative, with interesting characters and settings.
+    The story should be appropriate for the age group of the child.
 
     Remember: Generate a story with the theme: {theme}.
 """
 
+    print("Generating story outline...")
     # Ensure the entire workflow is a single trace
     # 1. Generate an outline
     outline_result = await Runner.run(
@@ -92,6 +110,45 @@ async def _get_story(knowledge: Knowledge, theme: str) -> StoryOutput:
         outline_result.final_output,
     )
     print(f"Story: {story_result.final_output}")
+
+    storyboard_output = await _get_storyboard(wrapper, story_result.final_output)
+    print("Storyboard generated: " + storyboard_output.model_dump_json())
+
+    print("Generating audio...")
+    audio_output = await generate_audio_from_storyboard(storyboard_output)
+
+    print("Generating images...")
+    images_output = await _generate_image_from_storyboard(
+        storyboard_output,
+    )
+
+    print("Generating video...")
+    video_output = []
+    try:
+        video_output = await generate_videos([Path(p) for p in images_output.image_paths])
+    except Exception as e:
+        print(f"Error generating video: {e}")
+    print(images_output)
+    print(audio_output)
+    print(video_output)
+
+    from api import add_to_output
+
+    add_to_output(
+        wrapper.context.convo_id,
+        "story_images",
+        images_output.model_dump(),
+    )
+    add_to_output(
+        wrapper.context.convo_id,
+        "story_audio",
+        audio_output,
+    )
+    add_to_output(
+        wrapper.context.convo_id,
+        "story_video",
+        video_output,
+    )
 
     return StoryOutput(
         story=story_result.final_output,
@@ -163,25 +220,40 @@ Keep the tone light, engaging, and appropriate for children.
 # --- End Interactive Story Components ---
 
 
+class Context(BaseModel):
+    context: ConvoInfo
+
+
 if __name__ == "__main__":
+    from api import CONVO_DB, EntryModel
+
+    CONVO_ID = "test_convo_id"
+    CONVO_DB[CONVO_ID] = EntryModel(
+        messages_to_user=[],
+        messages_to_agent=[],
+        outputs=[],
+        knowledge=Knowledge(
+            address=Address(city="Warsaw", country="Poland"),
+            parent=PersonEntry(
+                name="John Doe",
+                age=34,
+                likes=["cheese", "running"],
+                dislikes=["cats", "loud noises"],
+            ),
+            child=PersonEntry(
+                name="Little Timmy",
+                age=5,
+                likes=["playing", "adventures"],
+                dislikes=["bedtime", "vegetables"],
+            ),
+            theme="A brave little mouse",
+        ),
+        final_output={},
+    )
     asyncio.run(
         _get_story(
-            Knowledge(
-                address=Address(city="Warsaw", country="Poland"),
-                parent=PersonEntry(
-                    name="John Doe",
-                    age=34,
-                    likes=["cheese", "running"],
-                    dislikes=["cats", "loud noises"],
-                ),
-                child=PersonEntry(
-                    name="Little Timmy",
-                    age=5,
-                    likes=["playing", "adventures"],
-                    dislikes=["bedtime", "vegetables"],
-                ),
-                theme="A brave little mouse",
-            ),
+            Context(context=ConvoInfo(convo_id="test_convo_id")),
+            CONVO_DB[CONVO_ID].knowledge,
             "A brave little mouse",
         ),
     )

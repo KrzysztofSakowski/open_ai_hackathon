@@ -45,6 +45,12 @@ class InteractiveTurnOutput(BaseModel):
     options: StoryContinuationOutput | None  # Holds the *next* scene and options, or None if story ends
 
 
+class ConvoInfo(BaseModel):
+    convo_id: str
+    existing_convo: bool = False
+
+
+
 class FinalOutput(BaseModel):
     story: str
     story_image_paths: list[str]

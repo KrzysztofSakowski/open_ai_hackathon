@@ -56,16 +56,16 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
             parent=PersonEntry(
                 name="Helena",
                 age=40,
-                likes=["nature", "fishing", "sports", "hiking"],
+                likes=["Kopernik", "physics", "museums"],
                 dislikes=["spiders", "ants", "bats"],
             ),
             child=PersonEntry(
                 name="Mark",
                 age=10,
-                likes=["mystery", "magic", "turtles", "bats"],
+                likes=["Kopernik", "physics", "museums"],
                 dislikes=["sports"],
             ),
-            theme="Turtles with Mark on a hike through a magical place.",
+            theme="Mark wants to visit Kopernik center in Warsaw with his trusty turtle.",
         )
 
     # Add imports locally
@@ -145,6 +145,13 @@ async def onboard_user(wrapper: RunContextWrapper[ConvoInfo]) -> Knowledge:
         print(current_knowledge)
 
     CONVO_DB[wrapper.context.convo_id].knowledge = current_knowledge
+    from api import add_to_output
+
+    add_to_output(
+        wrapper.context.convo_id,
+        "knowledge",
+        current_knowledge.model_dump_json(),
+    )
     return current_knowledge
 
 

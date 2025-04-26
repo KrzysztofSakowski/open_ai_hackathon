@@ -10,6 +10,8 @@ from fastapi import FastAPI, Form, HTTPException, Path, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from models import Address, PersonEntry, Knowledge, FinalOutput, InteractiveTurnOutput, ConvoInfo
+from fastapi.staticfiles import StaticFiles
+
 from settings import env_settings
 from typing import Literal, Any
 
@@ -25,7 +27,7 @@ class AudioMessageToUser(MessageToUser):
 
 class OutputMessageToUser(MessageToUser):
     type: str = "output"
-    final_output: FinalOutput
+    final_output: dict
 
 
 class Conversation(BaseModel):
@@ -34,6 +36,7 @@ class Conversation(BaseModel):
     outputs: list[FinalOutput] = []
     knowledge: Knowledge | None = None
     story_history: list[str] = []
+    final_output: dict = {}
 
 
 CONVO_DB: dict[str, Conversation] = {}
@@ -55,6 +58,10 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+os.makedirs("static", exist_ok=True)
+
+# Mount the static directory
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 class StartBody(BaseModel):
@@ -66,14 +73,24 @@ async def start(body: StartBody):
     global CONVO_DB
 
     CONVO_ID = body.conversation_id or str(uuid.uuid4())
+    outputs = []
+    knowledge = None
     if CONVO_ID in CONVO_DB:
+        outputs = CONVO_DB[CONVO_ID].outputs
+        knowledge = CONVO_DB[CONVO_ID].knowledge
         del CONVO_DB[CONVO_ID]
         # raise HTTPException(
         #     status_code=status.HTTP_400_BAD_REQUEST,
         #     detail="Conversation ID already exists",
         # )
 
-    CONVO_DB[CONVO_ID] = Conversation(messages_to_user=[], messages_to_agent=[])
+    CONVO_DB[CONVO_ID] = EntryModel(
+        messages_to_user=[],
+        messages_to_agent=[],
+        outputs=outputs,
+        knowledge=knowledge,
+        final_output={},
+    )
 
     from main_agent import main_agent
 
@@ -81,6 +98,18 @@ async def start(body: StartBody):
     asyncio.create_task(main_agent(CONVO_ID))
     print("CONVO_ID: ", CONVO_ID)
     return {"conversation_id": CONVO_ID}
+
+
+def add_to_output(convo_id: str, item_id: str, item: dict):
+    global CONVO_DB
+    if convo_id not in CONVO_DB:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation ID not found",
+        )
+    print("Adding to output...")
+    CONVO_DB[convo_id].final_output[item_id] = item
+    return {"message": "Item added successfully"}
 
 
 def post_message(convo_id: str, message: MessageToUser):
@@ -171,7 +200,7 @@ async def get_state(convo_id: str = Path()):
         else:
             return {
                 "type": "output",
-                "text": msg.final_output.model_dump(),
+                "text": msg.final_output,
                 "format": "text",
             }
     return None
