@@ -250,6 +250,7 @@ export function PromptScreen(props: PromptScreenProps) {
         if (!response.ok) throw new Error("Audio failed");
         const data = await response.json();
         if (!data) return;
+        console.log(data);
         const audio = data.audio_base64;
         setPrompt(data.text);
         const audioUrl = "data:audio/webm;base64," + audio;

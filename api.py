@@ -9,6 +9,7 @@ from fastapi import FastAPI, Form, HTTPException, Path, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from models import Address, PersonEntry, Knowledge
+from fastapi.staticfiles import StaticFiles
 
 from settings import env_settings
 from models import FinalOutput
@@ -56,6 +57,10 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+os.makedirs("static", exist_ok=True)
+
+# Mount the static directory
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 class StartBody(BaseModel):
