@@ -19,6 +19,12 @@
   margin-bottom: 10px;
 }
 
+.text a {
+  color: blue;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 .text li + li {
   margin-top: 10px;
 }

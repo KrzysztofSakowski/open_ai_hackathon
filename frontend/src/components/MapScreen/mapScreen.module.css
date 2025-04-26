@@ -8,7 +8,7 @@
 
 .mapContainer {
   grid-column: 1 / 2;
-  grid-row:    1 / 2;
+  grid-row: 1 / 2;
   width: 100%;
   min-height: 0;
 }
@@ -21,15 +21,48 @@
 
 .description {
   grid-column: 2 / 3;
-  grid-row:    1 / 2;
+  grid-row: 1 / 2;
   padding: 16px;
   overflow-y: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: 42px;
+  text-align: justify;
+  font-size: 24px;
   color: #333333;
+  padding: 25px;
+}
+
+.description > div {
+  margin-bottom: 50px;
+}
+
+.description h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.description p + p {
+  margin-top: 20px;
+}
+
+/* Visit Website button */
+.visitButton {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  margin: 24px auto;
+  padding: 16px 0;
+  background-color: #0070f3;
+  color: #fff;
+  text-align: center;
+  font-family: var(--font-playpen);
+  font-size: 20px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.visitButton:hover {
+  background-color: #005bb5;
 }
 
 .nextButton {

@@ -11,6 +11,15 @@ export const FinalOutputSchema = z.object({
   type: z.literal("output"),
   format: z.literal("text"),
   text: z.object({
+    event: z.object({
+      address: z.string(),
+      description: z.string(),
+      estimated_cost: z.string(),
+      justification: z.string(),
+      name: z.string(),
+      url: z.string(),
+      url_to_book_tickets: z.string(),
+    }),
     storyboard: z.object({
       narration: z.string().array(),
       images: z.string().array(),
@@ -20,7 +29,6 @@ export const FinalOutputSchema = z.object({
     lesson: z.string(),
     reasoning: z.string(),
     plan_for_evening: z.string(),
-    // event
   }),
 });
 
