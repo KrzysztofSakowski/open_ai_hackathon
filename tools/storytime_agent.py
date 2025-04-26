@@ -125,7 +125,7 @@ async def _get_story(wrapper: RunContextWrapper[ConvoInfo], knowledge: Knowledge
     print("Generating video...")
     video_output = []
     try:
-        video_output = await generate_videos([Path(p) for p in images_output.image_paths])
+        video_output = generate_videos([Path(p) for p in images_output.image_paths])
     except Exception as e:
         print(f"Error generating video: {e}")
     print(images_output)
