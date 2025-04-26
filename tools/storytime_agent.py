@@ -72,7 +72,6 @@ async def get_story(theme: str) -> StoryOutput:
 
 async def _get_story(theme: str) -> StoryOutput:
     input_prompt = f"Generate a story with the theme: {theme}"
-    post_message(input_prompt)
 
     # Ensure the entire workflow is a single trace
     # 1. Generate an outline
