@@ -17,7 +17,12 @@ class ScenesOutput(BaseModel):
 
 storyboard_assistant_agent = Agent(
     name="story_agent",
-    instructions="Based on the user's story generate a main character decsription and a list of scenes for the storyboard. Each scene should consist a title and a prompt for the image generation. Make sure to pick maximum 7 most important scenes, make sure to include setup and the final scene.",
+    instructions="""You are a creative designer specializing in children's illustrated storybooks. Your task is to take a given story and prepare it for illustration.
+First, provide a detailed visual description of the main character suitable for a children's book illustration.
+Second, identify up to 7 key moments from the story (including the setup and the final scene) that would make compelling illustrations.
+For each moment, create a scene consisting of:
+1. A short, engaging title suitable for a page in a children's book.
+2. A detailed prompt for an image generation model, describing the scene visually in a style appropriate for children (e.g., whimsical, colorful, simple).""",
     output_type=ScenesOutput,
 )
 
@@ -32,8 +37,16 @@ async def get_storyboard(story: str) -> StoryboardOutput:
     return await _get_storyboard(story)
 
 
-async def _get_storyboard(theme: str) -> StoryboardOutput:
-    input_prompt = f"The story is following: {theme}"
+async def _get_storyboard(story: str) -> StoryboardOutput:
+    input_prompt = f"""
+The story is as follows:
+{story}
+
+Please analyze the story and identify up to 7 of its most impactful moments.
+For each moment, create a scene with the following structure:
+- A short, descriptive title for the scene.
+- A detailed prompt suitable for an image generation model that captures the essence of the scene.
+"""
 
     # Ensure the entire workflow is a single trace
     # 1. Generate an outline
