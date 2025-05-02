@@ -11,12 +11,6 @@ from agents import Agent, Runner
 from openai.types.responses import ResponseInputTextParam
 from openai.types.responses.response_input_item_param import Message
 
-from interactive_storytelling.models import (
-    InteractiveTurnOutput,
-    StorytellerContext,
-)
-
-# Import the new guardrail functions
 from interactive_storytelling.guardrails import (
     prompt_hijack_guardrail,
     violent_story_input_guardrail,
@@ -25,6 +19,10 @@ from interactive_storytelling.guardrails import (
     obscene_language_output_guardrail,
     age_appropriateness_guardrail,
 )
+from interactive_storytelling.models import (
+    InteractiveTurnOutput,
+    StorytellerContext,
+)
 
 # --- Agent Definition ---
 interactive_story_agent = Agent(
@@ -32,7 +30,7 @@ interactive_story_agent = Agent(
     instructions="""
 You are an interactive storyteller for children.
 
-Given the story so far and the user's chosen path (or an initial story context), generate the next short scene (1-2 paragraphs) of the story.
+Given the story so far and the user's chosen path (or an initial story context), generate the next short scene (3-5 paragraphs) of the story.
 Then, provide two distinct and engaging options for how the story could continue next.
 
 Output should be the next scene and two new options.
@@ -69,7 +67,7 @@ async def run_interactive_story(
             story_input_so_far,
             context=story_context,
         )
-        final_output = story_decision.final_output
+        final_output: InteractiveTurnOutput = story_decision.final_output
 
         if final_output.decisions is None:
             yield final_output  # Yield the final scene without decisions

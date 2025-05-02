@@ -13,8 +13,7 @@ from agents import (
 )
 from pydantic import BaseModel
 
-# Import necessary types from models
-from .models import InteractiveTurnOutput, StorytellerContext
+from interactive_storytelling.models import InteractiveTurnOutput, StorytellerContext
 
 
 # === Prompt Hijack Guardrail ===
