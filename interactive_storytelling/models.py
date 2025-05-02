@@ -51,7 +51,7 @@ class StorytellerContext(BaseModel):
     """Context for the storyteller agent."""
 
     main_topic: str
-    main_moral: str
+    main_moral: StoryMoral
     main_character: str
     language: str
     age: int

@@ -14,7 +14,7 @@ from agents import trace
 from dotenv import load_dotenv
 
 from interactive_storytelling.agent import run_interactive_story
-from interactive_storytelling.models import StorytellerContext
+from interactive_storytelling.models import StorytellerContext, StoryMoral
 
 
 async def _run_in_cli():
@@ -27,7 +27,10 @@ async def _run_in_cli():
     story_generator = run_interactive_story(
         StorytellerContext(
             main_topic=selected_story_topic,
-            main_moral="You should always trust your instincts",
+            main_moral=StoryMoral(
+                name="Friendship",
+                description="Friendship and loyalty are priceless.",
+            ),
             main_character="Nana, the Shiba dog",
             language="Polish",
             age=5,
