@@ -16,6 +16,16 @@ from interactive_storytelling.models import (
     StorytellerContext,
 )
 
+# Import the new guardrail functions
+from interactive_storytelling.guardrails import (
+    prompt_hijack_guardrail,
+    violent_story_input_guardrail,
+    violent_story_output_guardrail,
+    obscene_language_input_guardrail,
+    obscene_language_output_guardrail,
+    age_appropriateness_guardrail,
+)
+
 # --- Agent Definition ---
 interactive_story_agent = Agent(
     name="interactive_story_agent",
@@ -31,13 +41,13 @@ Keep the tone light, engaging, and appropriate for children of age provided in t
     output_type=InteractiveTurnOutput,
     input_guardrails=[
         prompt_hijack_guardrail,
-        violent_story_guardrail,
-        obscene_language_guardrail,
+        violent_story_input_guardrail,
+        obscene_language_input_guardrail,
     ],
     output_guardrails=[
         age_appropriateness_guardrail,
-        violent_story_guardrail,
-        obscene_language_guardrail,
+        violent_story_output_guardrail,
+        obscene_language_output_guardrail,
     ],
 )
 
