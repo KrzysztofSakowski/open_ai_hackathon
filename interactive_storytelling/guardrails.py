@@ -8,7 +8,6 @@ from agents import (
     RunContextWrapper,
     Runner,
     TResponseInputItem,
-    TOutputData,
     input_guardrail,
     output_guardrail,
 )
@@ -39,21 +38,11 @@ prompt_hijack_agent = Agent(
 
 @input_guardrail
 async def prompt_hijack_guardrail(
-    ctx: RunContextWrapper[StorytellerContext | None], agent: Agent, input_data: str | list[TResponseInputItem]
+    ctx: RunContextWrapper[StorytellerContext | None], _: Agent, input_data: str | list[TResponseInputItem]
 ) -> GuardrailFunctionOutput:
     """Checks input for prompt hijacking attempts."""
     # We only check string inputs or the text part of user messages
-    text_input = ""
-    if isinstance(input_data, str):
-        text_input = input_data
-    elif isinstance(input_data, list):
-        # Look for the last user message text
-        for item in reversed(input_data):
-            if hasattr(item, "role") and item.role == "user" and hasattr(item, "content"):
-                content = item.content
-                if content and hasattr(content[0], "text"):
-                    text_input = content[0].text
-                    break
+    text_input = input_data if isinstance(input_data, str) else _get_latest_user_message(input_data)
 
     if not text_input:
         # If no relevant text found, assume no hijacking
@@ -87,19 +76,10 @@ violence_check_agent = Agent(
 
 @input_guardrail
 async def violent_story_input_guardrail(
-    ctx: RunContextWrapper[StorytellerContext | None], agent: Agent, input_data: str | list[TResponseInputItem]
+    ctx: RunContextWrapper[StorytellerContext | None], _: Agent, input_data: str | list[TResponseInputItem]
 ) -> GuardrailFunctionOutput:
     """Checks user input for violent content."""
-    text_input = ""
-    if isinstance(input_data, str):
-        text_input = input_data
-    elif isinstance(input_data, list):
-        for item in reversed(input_data):
-            if hasattr(item, "role") and item.role == "user" and hasattr(item, "content"):
-                content = item.content
-                if content and hasattr(content[0], "text"):
-                    text_input = content[0].text
-                    break
+    text_input = input_data if isinstance(input_data, str) else _get_latest_user_message(input_data)
 
     if not text_input:
         return GuardrailFunctionOutput(tripwire_triggered=False, output_info=None)
@@ -113,7 +93,7 @@ async def violent_story_input_guardrail(
 
 @output_guardrail
 async def violent_story_output_guardrail(
-    ctx: RunContextWrapper[StorytellerContext | None], agent: Agent, output_data: InteractiveTurnOutput
+    ctx: RunContextWrapper[StorytellerContext | None], _: Agent, output_data: InteractiveTurnOutput
 ) -> GuardrailFunctionOutput:
     """Checks agent output (scene and decisions) for violent content."""
     text_to_check = output_data.scene_text
@@ -149,19 +129,10 @@ obscenity_check_agent = Agent(
 
 @input_guardrail
 async def obscene_language_input_guardrail(
-    ctx: RunContextWrapper[StorytellerContext | None], agent: Agent, input_data: str | list[TResponseInputItem]
+    ctx: RunContextWrapper[StorytellerContext | None], _: Agent, input_data: str | list[TResponseInputItem]
 ) -> GuardrailFunctionOutput:
     """Checks user input for obscene language."""
-    text_input = ""
-    if isinstance(input_data, str):
-        text_input = input_data
-    elif isinstance(input_data, list):
-        for item in reversed(input_data):
-            if hasattr(item, "role") and item.role == "user" and hasattr(item, "content"):
-                content = item.content
-                if content and hasattr(content[0], "text"):
-                    text_input = content[0].text
-                    break
+    text_input = input_data if isinstance(input_data, str) else _get_latest_user_message(input_data)
 
     if not text_input:
         return GuardrailFunctionOutput(tripwire_triggered=False, output_info=None)
@@ -175,7 +146,7 @@ async def obscene_language_input_guardrail(
 
 @output_guardrail
 async def obscene_language_output_guardrail(
-    ctx: RunContextWrapper[StorytellerContext | None], agent: Agent, output_data: InteractiveTurnOutput
+    ctx: RunContextWrapper[StorytellerContext | None], _: Agent, output_data: InteractiveTurnOutput
 ) -> GuardrailFunctionOutput:
     """Checks agent output (scene and decisions) for obscene language."""
     text_to_check = output_data.scene_text
@@ -213,7 +184,7 @@ age_appropriateness_agent = Agent(
 
 @output_guardrail
 async def age_appropriateness_guardrail(
-    ctx: RunContextWrapper[StorytellerContext | None], agent: Agent, output_data: InteractiveTurnOutput
+    ctx: RunContextWrapper[StorytellerContext | None], _: Agent, output_data: InteractiveTurnOutput
 ) -> GuardrailFunctionOutput:
     """Checks agent output for age appropriateness using context."""
     story_context = ctx.context
@@ -244,3 +215,11 @@ async def age_appropriateness_guardrail(
         # Tripwire if *not* appropriate
         tripwire_triggered=not result.final_output.is_appropriate,
     )
+
+
+def _get_latest_user_message(input_data: list[TResponseInputItem]) -> str:
+    """Extracts the latest user message from the input data."""
+    latest_user_message = next((item for item in reversed(input_data) if item.get("role") == "user"), None)
+    if latest_user_message:
+        return latest_user_message.get("content", [{}])[0].get("text", "")
+    return ""

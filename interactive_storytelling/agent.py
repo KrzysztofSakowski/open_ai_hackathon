@@ -67,6 +67,7 @@ async def run_interactive_story(
         story_decision = await Runner.run(
             interactive_story_agent,
             story_input_so_far,
+            context=story_context,
         )
         final_output = story_decision.final_output
 

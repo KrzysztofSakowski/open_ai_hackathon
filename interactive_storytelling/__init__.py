@@ -4,7 +4,7 @@ Module containing the interactive story generator.
 To run it in the interactive CLI mode, run:
 
 ```bash
-python -m interactive_storytelling
+python -m interactive_storytelling.__init__
 ```
 """
 
