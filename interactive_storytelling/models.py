@@ -61,7 +61,7 @@ class StorytellerContext(BaseModel):
         return f"""
 Prepare a story for child of age {self.age} years old.
 The story should be about {self.main_topic}.
-The story should have the following moral: {self.main_moral}.
+The story should have the following moral: {self.main_moral.name}.
 The story should have the following main character: {self.main_character}.
 The story should be written in the following language: {self.language}.
 """
