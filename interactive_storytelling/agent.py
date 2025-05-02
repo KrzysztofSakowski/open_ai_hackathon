@@ -8,15 +8,13 @@ It allows users to engage in an interactive storytelling experience where they c
 from typing import AsyncGenerator
 
 from agents import Agent, Runner
+from openai.types.responses import ResponseInputTextParam
+from openai.types.responses.response_input_item_param import Message
+
 from interactive_storytelling.models import (
-    StoryMoral,
-    EXAMPLE_STORY_MORALS,
-    InteractiveTurnDecisions,
     InteractiveTurnOutput,
     StorytellerContext,
 )
-from openai.types.responses import ResponseInputTextParam
-from openai.types.responses.response_input_item_param import Message
 
 # --- Agent Definition ---
 interactive_story_agent = Agent(
@@ -54,8 +52,6 @@ async def run_interactive_story(
             content=[ResponseInputTextParam(text=story_context.get_prompt_content(), type="input_text")],
         ),
     ]
-
-    user_choice = ""  # Initialize, will be replaced by yield
 
     while True:
         story_decision = await Runner.run(
