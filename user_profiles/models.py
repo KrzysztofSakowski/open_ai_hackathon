@@ -70,7 +70,7 @@ class ParentProfile(BaseModel):
     """Represents the profile of a parent user."""
 
     name: str
-    email: str
+    email: EmailStr
     location: str
     preferred_language: Language
     available_transport_methods: List[TransportMethod]
