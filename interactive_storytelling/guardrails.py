@@ -15,7 +15,6 @@ from pydantic import BaseModel
 
 from interactive_storytelling.models import InteractiveTurnOutput, StorytellerContext
 
-
 # === Prompt Hijack Guardrail ===
 
 
@@ -214,6 +213,27 @@ async def age_appropriateness_guardrail(
         # Tripwire if *not* appropriate
         tripwire_triggered=not result.final_output.is_appropriate,
     )
+
+
+# === Input Length Guardrail ===
+
+
+MAX_INPUT_LENGTH = 100
+
+
+@input_guardrail
+async def input_length_guardrail(
+    ctx: RunContextWrapper[StorytellerContext | None], _: Agent, input_data: str | list[TResponseInputItem]
+) -> GuardrailFunctionOutput:
+    """Checks input length to prevent excessively long user input."""
+    text_input = input_data if isinstance(input_data, str) else _get_latest_user_message(input_data)
+
+    if len(text_input) > MAX_INPUT_LENGTH:
+        return GuardrailFunctionOutput(
+            tripwire_triggered=True,
+            output_info=f"Input is too long ({len(text_input)} characters). Maximum allowed is {MAX_INPUT_LENGTH}.",
+        )
+    return GuardrailFunctionOutput(tripwire_triggered=False, output_info=None)
 
 
 def _get_latest_user_message(input_data: list[TResponseInputItem]) -> str:
