@@ -7,5 +7,7 @@ python-dotenv==1.1.0
 python-multipart>=0.0.6
 runwayml==3.0.3
 uvicorn>=0.23.2
+pytest==8.3.5
+pytest-asyncio==0.26.0
 matplotlib==3.10.1
 Pillow>=9.0.0
