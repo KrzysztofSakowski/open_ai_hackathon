@@ -181,3 +181,5 @@ cython_debug/
 .env
 
 .DS_Store
+
+.idea/
