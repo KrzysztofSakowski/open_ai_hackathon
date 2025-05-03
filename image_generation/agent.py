@@ -36,7 +36,7 @@ image_generation_agent = Agent(
 async def run_image_generation(context: ImageGeneratorContext) -> ImageGenerationOutput:
     response = await Runner.run(
         image_generation_agent,
-        context.model_dump(),
+        context.images_to_generate,  # TODO: fix typing
         context=context,
     )
     return response.final_output
