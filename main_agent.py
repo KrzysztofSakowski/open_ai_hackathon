@@ -1,19 +1,13 @@
 import asyncio
-import json
 
 from agents import Agent, Runner, WebSearchTool
-from pydantic import BaseModel
 
-from images import generate_image_from_storyboard
-from tools.event_tool import EventModel, find_events_for_child
-from tools.generate_lesson_tool import lesson_generator_agent
-from tools.onboarding_agent import onboard_user, Knowledge
-from tools.storyboard_agent import get_storyboard
-from tools.storytime_agent import get_story, StoryContinuationOutput
-from models import FinalOutput, ConvoInfo
+from models import FinalOutput
 from settings import env_settings
-from api import wait_for_user_message
-
+from tools.event_tool import find_events_for_child
+from tools.generate_lesson_tool import lesson_generator_agent
+from tools.onboarding_agent import ConvoInfo, onboard_user
+from tools.storytime_agent import get_story
 
 parent_assistant_agent = Agent[ConvoInfo](
     name="main_agent",
@@ -56,7 +50,7 @@ parent_assistant_agent = Agent[ConvoInfo](
 
 
 async def main_agent(convo_id: str) -> None:
-    from api import CONVO_DB
+    from api import CONVO_DB, OutputMessageToUser, post_message
 
     final_plan = await Runner.run(
         parent_assistant_agent,
@@ -83,8 +77,7 @@ async def main_agent(convo_id: str) -> None:
     if env_settings.run_in_cli:
         return
 
-    from api import post_message, CONVO_DB
-    from api import OutputMessageToUser
+    from api import CONVO_DB, OutputMessageToUser, post_message
 
     final_output = {
         **CONVO_DB[convo_id].final_output,
