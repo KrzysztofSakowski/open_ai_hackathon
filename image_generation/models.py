@@ -19,9 +19,3 @@ class ImageGeneratorContext(BaseModel):
     child_age: int
     child_preferred_style: str
     images_to_generate: list[ImageGenerationPrompt]
-
-
-class ImageGenerationOutput(BaseModel):
-    """Output of the image generation agent."""
-
-    images: list[bytes]
