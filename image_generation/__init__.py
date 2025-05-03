@@ -7,6 +7,8 @@ python -m image_generation.__init__
 ```
 """
 
+import base64
+
 from image_generation.agent import generate_images
 import matplotlib.pyplot as plt
 import asyncio
@@ -14,6 +16,7 @@ from PIL import Image
 import io
 import time
 
+from image_generation.guardrails import inappropriate_image_output_guardrail
 from image_generation.models import ImageGeneratorContext, ImageGenerationPrompt
 
 
@@ -36,6 +39,9 @@ async def _run_in_cli() -> None:
     end_time = time.monotonic()
     generation_time = end_time - start_time
     print(f"Image(s) generated in {generation_time:.2f} seconds")
+    image_base64 = base64.b64encode(image_bytes[0]).decode("utf-8")
+    is_inappropriate = await inappropriate_image_output_guardrail(image_base64)
+    print(f"Is the image inappropriate? {is_inappropriate}")
 
     for image in image_bytes:
         image = Image.open(io.BytesIO(image))
