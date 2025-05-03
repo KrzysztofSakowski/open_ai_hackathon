@@ -5,11 +5,15 @@ from datetime import date
 
 
 class Language(str, Enum):
+    """Enumeration for supported languages."""
+
     pl = "pl"
     en = "en"
 
 
 class TransportMethod(str, Enum):
+    """Enumeration for available transport methods."""
+
     car = "car"
     public_transport = "public_transport"
     walking = "walking"
@@ -17,6 +21,8 @@ class TransportMethod(str, Enum):
 
 
 class InterestArea(str, Enum):
+    """Enumeration for areas of interest for children."""
+
     science = "science"
     art = "art"
     sports = "sports"
@@ -28,12 +34,28 @@ class InterestArea(str, Enum):
 
 
 class DifficultyLevel(str, Enum):
+    """Enumeration for difficulty levels, e.g., for attention span or activity complexity."""
+
     low = "low"
     medium = "medium"
     high = "high"
 
 
 class ChildProfile(BaseModel):
+    """
+    Represents a child's profile, including personal details, interests, and traits.
+
+    Attributes:
+        name (str): The child's name.
+        date_of_birth (date): The child's date of birth.
+        interests (List[InterestArea]): A list of the child's areas of interest.
+        favorite_color (Optional[str]): The child's favorite color, if specified.
+        hobbies (Optional[List[str]]): A list of the child's hobbies, if specified.
+        difficult_subjects (Optional[List[str]]): Subjects the child finds challenging, if specified.
+        personality_traits (Optional[List[str]]): A list of the child's personality traits, if specified.
+        attention_span (Optional[DifficultyLevel]): The child's attention span level, if specified.
+    """
+
     name: str
     date_of_birth: date
     interests: List[InterestArea]
@@ -45,6 +67,8 @@ class ChildProfile(BaseModel):
 
 
 class ParentProfile(BaseModel):
+    """Represents the profile of a parent user."""
+
     name: str
     email: str
     location: str
@@ -55,6 +79,8 @@ class ParentProfile(BaseModel):
 
 
 class UserContext(BaseModel):
+    """Represents the overall user context, combining parent and child profiles."""
+
     parent: ParentProfile
     children: List[ChildProfile]
     registration_date: date
