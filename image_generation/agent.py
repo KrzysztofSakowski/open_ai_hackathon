@@ -8,6 +8,8 @@ import asyncio
 async def generate_images(context: ImageGeneratorContext) -> list[bytes]:
     """
     Generate images for a list of prompts.
+
+    Generated images are tailored to the child's age and preferred style.
     """
     return await asyncio.gather(
         *(

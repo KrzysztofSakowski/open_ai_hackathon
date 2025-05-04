@@ -19,3 +19,10 @@ class ImageGeneratorContext(BaseModel):
     child_age: int
     child_preferred_style: str
     images_to_generate: list[ImageGenerationPrompt]
+
+
+class InappropriateImageOutput(BaseModel):
+    """Contains the result of the inappropriate image output guardrail."""
+
+    is_inappropriate: bool
+    reason: str
