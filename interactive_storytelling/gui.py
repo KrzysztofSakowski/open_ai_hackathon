@@ -28,7 +28,6 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 class StoryApp(customtkinter.CTk):
     def __init__(self):
         super().__init__()
-
         # --- Configure window ---
         self.title("Interactive Storyteller")
         self.geometry(f"{800}x{600}")
@@ -54,6 +53,9 @@ class StoryApp(customtkinter.CTk):
 
         # Initialize OpenAI client
         self.openai_client = settings.openai_client
+        # Audio playback state
+        self.current_sound_playback = None
+        self.current_audio_path = None
 
         # --- Configure grid layout (1x2) ---
         self.grid_columnconfigure(1, weight=1)
@@ -72,7 +74,9 @@ class StoryApp(customtkinter.CTk):
         # --- Create main content frame ---
         self.main_frame = customtkinter.CTkFrame(self, corner_radius=0)
         self.main_frame.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
-        self.main_frame.grid_rowconfigure(1, weight=1)  # Allow textbox to expand
+        # Configure row weights for resizing: Give image (row 0) more weight than textbox (row 1)
+        self.main_frame.grid_rowconfigure(0, weight=3)  # Image row
+        self.main_frame.grid_rowconfigure(1, weight=2)  # Textbox row
         self.main_frame.grid_columnconfigure(0, weight=1)  # Allow widgets to expand horizontally
 
         # --- Create image display (Placeholder) ---
@@ -104,12 +108,17 @@ class StoryApp(customtkinter.CTk):
         )
         self.button_option_2.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
 
+        # Register the closing protocol
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
     def start_story(self):
         print("Starting story...")
         self.story_generator = run_interactive_story(self.story_context)
         self.button_option_1.configure(text="Option A", command=lambda: self.make_choice("A"), state="disabled")
         self.button_option_2.configure(state="disabled")
         self._advance_story(None)  # Start the story with no initial choice
+        # Keep track of the last played audio path to delete it
+        self.last_played_audio_path: str | None = None
 
     def make_choice(self, choice: str):
         print(f"Choice made: {choice}")
@@ -262,30 +271,46 @@ class StoryApp(customtkinter.CTk):
             self.after(100, func=self._check_queue)
 
     def _play_audio(self, audio_path: str | None):
-        """Plays the audio file in a separate thread and cleans up."""
-        if not audio_path or not os.path.exists(audio_path):
-            print("No valid audio path provided or file doesn't exist.")
-            return
+        """Plays audio using playsound3, stopping the previous one first."""
+        # Stop and clean up previous sound playback if it exists
+        if self.current_sound_playback and self.current_sound_playback.is_alive():
+            print("Stopping previous audio playback...")
+            self.current_sound_playback.stop()
+            self.current_sound_playback = None  # Clear the reference
 
-        def _playback_and_cleanup(path):
+        # Clean up the previous temporary audio file
+        if self.current_audio_path:
+            print(f"Attempting to remove previous audio file: {self.current_audio_path}")
             try:
-                print(f"Playing audio: {path}")
-                playsound(path)
-                print(f"Finished playing: {path}")
-            except Exception as e:
-                print(f"Error playing sound {path}: {e}")
-            finally:
-                try:
-                    os.remove(path)
-                    print(f"Deleted temp audio file: {path}")
-                except Exception as e:
-                    print(f"Error deleting temp audio file {path}: {e}")
+                os.remove(self.current_audio_path)
+                print(f"Successfully removed: {self.current_audio_path}")
+            except OSError as e:
+                print(f"Error removing previous audio file {self.current_audio_path}: {e}")
+            self.current_audio_path = None  # Clear the path reference
 
-        playback_thread = threading.Thread(target=_playback_and_cleanup, args=(audio_path,), daemon=True)
-        playback_thread.start()
+        # Play the new audio file if a path is provided
+        if audio_path:
+            try:
+                print(f"Playing audio from: {audio_path}")
+                self.current_sound_playback = playsound(audio_path, block=False)
+                self.current_audio_path = audio_path  # Store the new path
+            except Exception as e:
+                print(f"Error playing sound {audio_path}: {e}")
+                self.current_sound_playback = None
+                self.current_audio_path = None
+                # Attempt cleanup even if playback failed to start
+                try:
+                    os.remove(audio_path)
+                    print(f"Cleaned up failed playback file: {audio_path}")
+                except OSError as remove_e:
+                    print(f"Error removing failed playback file {audio_path}: {remove_e}")
+        else:
+            # Ensure references are clear if no new audio is played
+            self.current_sound_playback = None
+            self.current_audio_path = None
 
     def _display_image_bytes(self, image_bytes: bytes | None):
-        """Loads image from bytes and updates the image label."""
+        """Displays an image from bytes data."""
         if image_bytes:
             try:
                 pil_image = Image.open(io.BytesIO(image_bytes))
@@ -321,7 +346,29 @@ class StoryApp(customtkinter.CTk):
             self.button_option_1.configure(text="The End", state="disabled")
             self.button_option_2.configure(text="Start Over?", state="normal", command=self.start_story)
 
+    def on_closing(self):
+        """Handles window close event."""
+        print("Window closing...")
+        # Stop any active sound playback
+        if self.current_sound_playback and self.current_sound_playback.is_alive():
+            print("Stopping audio on close...")
+            self.current_sound_playback.stop()
+            self.current_sound_playback = None
 
+        # Clean up the last temporary audio file
+        if self.current_audio_path:
+            print(f"Removing last audio file on close: {self.current_audio_path}")
+            try:
+                os.remove(self.current_audio_path)
+            except OSError as e:
+                print(f"Error removing last audio file {self.current_audio_path} on close: {e}")
+            self.current_audio_path = None
+
+        print("Destroying window.")
+        self.destroy()
+
+
+# --- Main Execution ---
 if __name__ == "__main__":
     app = StoryApp()
     app.mainloop()
