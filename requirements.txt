@@ -12,3 +12,4 @@ pytest-asyncio==0.26.0
 matplotlib==3.10.1
 customtkinter>=5.2.2
 pillow>=10.0.0 # Added for image handling in GUI
+playsound3==3.2.3 # Added for audio playback

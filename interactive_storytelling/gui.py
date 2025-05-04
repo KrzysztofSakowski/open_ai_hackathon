@@ -5,16 +5,20 @@ from queue import Queue
 from typing import AsyncGenerator
 import os
 import io
+import tempfile
+from playsound3 import playsound
 
 import customtkinter
 from PIL import Image
 from dotenv import load_dotenv
+from audio import generate_audio
 
 from interactive_storytelling.agent import run_interactive_story
 from interactive_storytelling.models import StorytellerContext, StoryMoral, InteractiveTurnOutput
 from image_generation.agent import generate_images
 from image_generation.models import ImageGeneratorContext, ImageGenerationPrompt
 
+import settings
 
 # --- Basic Setup ---
 customtkinter.set_appearance_mode("system")  # Modes: "System" (standard), "Dark", "Light"
@@ -34,7 +38,9 @@ class StoryApp(customtkinter.CTk):
 
         # --- Story State ---
         self.story_generator: AsyncGenerator[InteractiveTurnOutput, str] | None = None
-        self.result_queue: Queue[tuple[InteractiveTurnOutput, bytes] | Exception] = queue.Queue()
+        self.result_queue: Queue[tuple[InteractiveTurnOutput | None, bytes | None, str | None] | Exception] = (
+            queue.Queue()
+        )
         self.story_context = StorytellerContext(  # Default context, can be made configurable
             main_topic="A curious squirrel discovering a hidden world in a park.",
             main_moral=StoryMoral(
@@ -45,6 +51,9 @@ class StoryApp(customtkinter.CTk):
             language="Polish",
             age=8,
         )
+
+        # Initialize OpenAI client
+        self.openai_client = settings.openai_client
 
         # --- Configure grid layout (1x2) ---
         self.grid_columnconfigure(1, weight=1)
@@ -106,20 +115,23 @@ class StoryApp(customtkinter.CTk):
         print(f"Choice made: {choice}")
         self._advance_story(choice)
 
-    def _run_async_story_step(self, choice: str | None):
-        """Runs the async story generator step and image generation in a separate thread."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+    async def _async_get_story_and_generate_media(
+        self, choice: str | None
+    ) -> tuple[InteractiveTurnOutput | None, bytes | None, str | None]:
+        """Helper async function to run story and media generation tasks."""
         story_turn_result: InteractiveTurnOutput | None = None
         image_bytes_result: bytes | None = None
-        try:
-            # 1. Get the next story turn
-            story_turn_result = loop.run_until_complete(self.story_generator.asend(choice))
+        audio_path_result: str | None = None
 
-            # 2. If successful, generate the image
-            if story_turn_result and story_turn_result.description_of_the_scene_for_image_generation:
+        # 1. Get the next story turn
+        story_turn_result = await self.story_generator.asend(choice)
+
+        if story_turn_result:
+            # --- Set up concurrent Image and Audio Generation Tasks ---
+            img_gen_task = None
+            if story_turn_result.description_of_the_scene_for_image_generation:
                 print(
-                    f"Generating image for: {story_turn_result.description_of_the_scene_for_image_generation[:50]}..."
+                    f"Setting up image generation for: {story_turn_result.description_of_the_scene_for_image_generation[:50]}..."
                 )
                 img_context = ImageGeneratorContext(
                     images_to_generate=[
@@ -130,25 +142,84 @@ class StoryApp(customtkinter.CTk):
                         )
                     ],
                     child_age=self.story_context.age,
-                    child_preferred_style="cartoonish",  # Or fetch from context if available
+                    child_preferred_style="cartoonish",
                 )
-                try:
-                    generated_images = loop.run_until_complete(generate_images(img_context))
-                    if generated_images:
-                        image_bytes_result = generated_images[0]
-                        print("Image generated successfully.")
-                    else:
-                        print("Image generation returned no results.")
-                except Exception as img_exc:
-                    print(f"Error during image generation: {img_exc}")
-                    # Keep image_bytes_result as None
+                img_gen_task = asyncio.create_task(generate_images(img_context))
 
-            # Put the combined result (or exception) in the queue
-            self.result_queue.put((story_turn_result, image_bytes_result))
+            audio_gen_task = None
+            temp_audio_path = None
+            if story_turn_result.scene_text:
+                print(f"Setting up audio generation for: {story_turn_result.scene_text[:50]}...")
+                try:
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_f:
+                        temp_audio_path = tmp_f.name
+                    print(f"Generated temp path for audio: {temp_audio_path}")
+                    audio_gen_task = asyncio.create_task(
+                        generate_audio(self.openai_client, story_turn_result.scene_text, temp_audio_path)
+                    )
+                except Exception as path_exc:
+                    print(f"Error creating temp audio file path: {path_exc}")
+                    temp_audio_path = None
+
+            # --- Await concurrent tasks using asyncio.gather ---
+            tasks_to_await = [task for task in [img_gen_task, audio_gen_task] if task is not None]
+            if tasks_to_await:
+                print("Awaiting image/audio generation...")
+                try:
+                    results = await asyncio.gather(*tasks_to_await, return_exceptions=True)
+                    # Process results safely
+                    res_idx = 0
+                    if img_gen_task:
+                        img_res = results[res_idx]
+                        if isinstance(img_res, list) and img_res:
+                            image_bytes_result = img_res[0]
+                            print("Image generated successfully.")
+                        elif isinstance(img_res, Exception):
+                            print(f"Error during image generation: {img_res}")
+                        else:
+                            print("Image generation returned no/unexpected results.")
+                        res_idx += 1
+                    if audio_gen_task:
+                        audio_res = results[res_idx]
+                        if isinstance(audio_res, Exception):
+                            print(f"Error during audio generation: {audio_res}")
+                            if temp_audio_path and os.path.exists(temp_audio_path):
+                                try:
+                                    os.remove(temp_audio_path)
+                                except OSError:
+                                    pass
+                            temp_audio_path = None
+                        elif temp_audio_path:
+                            audio_path_result = temp_audio_path
+                            print("Audio generated successfully.")
+                        else:
+                            print("Audio generation task finished but temp path missing?")
+
+                except Exception as gather_exc:
+                    print(f"Error awaiting generation tasks: {gather_exc}")
+                    if temp_audio_path and os.path.exists(temp_audio_path):
+                        try:
+                            os.remove(temp_audio_path)
+                        except OSError:
+                            pass
+                    temp_audio_path = None
+
+        return story_turn_result, image_bytes_result, audio_path_result
+
+    def _run_async_story_step(self, choice: str | None):
+        """Runs the async helper function in a separate thread's event loop."""
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            story_turn, image_bytes, audio_path = loop.run_until_complete(
+                self._async_get_story_and_generate_media(choice)
+            )
+
+            self.result_queue.put((story_turn, image_bytes, audio_path))
 
         except Exception as e:
-            print(f"Error in async step: {e}")
-            self.result_queue.put(e)  # Put exception in queue
+            print(f"Error in async step execution: {e}")
+            self.result_queue.put(e)
         finally:
             loop.close()
 
@@ -161,11 +232,9 @@ class StoryApp(customtkinter.CTk):
         self.story_textbox.insert("0.0", "Thinking...")
         self.story_textbox.configure(state="disabled")
 
-        # Run the async part in a separate thread
         thread = threading.Thread(target=self._run_async_story_step, args=(choice,))
         thread.start()
 
-        # Start polling the queue for the result
         self._check_queue()
 
     def _check_queue(self):
@@ -173,73 +242,82 @@ class StoryApp(customtkinter.CTk):
         try:
             result = self.result_queue.get_nowait()
             if isinstance(result, Exception):
-                # Handle exceptions from the async thread (e.g., story generation failed)
-                print(f"Error in story/image generation: {result}")
+                print(f"Error in story/image/audio generation: {result}")
                 self.story_textbox.configure(state="normal")
                 self.story_textbox.delete("0.0", "end")
                 self.story_textbox.insert("0.0", f"An error occurred: {result}")
                 self.story_textbox.configure(state="disabled")
-                self._display_image_bytes(None)  # Clear image on error
+                self._display_image_bytes(None)
                 self.button_option_1.configure(text="Start New Story?", command=self.start_story, state="normal")
                 self.button_option_2.configure(text="", state="disabled")
-            elif isinstance(result, tuple) and len(result) == 2:
-                # Handle successful result (story_turn, image_bytes)
-                story_turn, image_bytes = result
+            elif isinstance(result, tuple) and len(result) == 3:
+                story_turn, image_bytes, audio_path = result
                 if story_turn is not None:
-                    self._update_ui(story_turn, image_bytes)
+                    self._update_ui(story_turn, image_bytes, audio_path)
                 else:
-                    # Should not happen if exception handling is correct, but handle defensively
                     print("Error: Received None for story_turn in result tuple.")
-                    self._display_image_bytes(None)  # Clear image
-            else:
-                # Handle unexpected result format
-                print(f"Error: Unexpected result format in queue: {type(result)}")
-                self._display_image_bytes(None)
+                    self._display_image_bytes(None)
 
         except queue.Empty:
-            # If queue is empty, schedule to check again later
             self.after(100, func=self._check_queue)
+
+    def _play_audio(self, audio_path: str | None):
+        """Plays the audio file in a separate thread and cleans up."""
+        if not audio_path or not os.path.exists(audio_path):
+            print("No valid audio path provided or file doesn't exist.")
+            return
+
+        def _playback_and_cleanup(path):
+            try:
+                print(f"Playing audio: {path}")
+                playsound(path)
+                print(f"Finished playing: {path}")
+            except Exception as e:
+                print(f"Error playing sound {path}: {e}")
+            finally:
+                try:
+                    os.remove(path)
+                    print(f"Deleted temp audio file: {path}")
+                except Exception as e:
+                    print(f"Error deleting temp audio file {path}: {e}")
+
+        playback_thread = threading.Thread(target=_playback_and_cleanup, args=(audio_path,), daemon=True)
+        playback_thread.start()
 
     def _display_image_bytes(self, image_bytes: bytes | None):
         """Loads image from bytes and updates the image label."""
         if image_bytes:
             try:
                 pil_image = Image.open(io.BytesIO(image_bytes))
-                # Create CTkImage using the same size as the placeholder
                 ctk_image = customtkinter.CTkImage(light_image=pil_image, dark_image=pil_image, size=(400, 300))
-                self.image_label.configure(image=ctk_image, text="")  # Update image, clear text
-                self.image_label.image = ctk_image  # Keep a reference!
+                self.image_label.configure(image=ctk_image, text="")
+                self.image_label.image = ctk_image
                 print("Image displayed.")
             except Exception as e:
                 print(f"Error loading image from bytes: {e}")
-                self.image_label.configure(
-                    image=self.story_image_ctk, text="Error loading image"
-                )  # Show placeholder on error
-                self.image_label.image = self.story_image_ctk  # Keep placeholder reference
+                self.image_label.configure(image=self.story_image_ctk, text="Error loading image")
+                self.image_label.image = self.story_image_ctk
         else:
             print("No image bytes provided, displaying placeholder.")
-            # No image bytes received (e.g., generation failed or first step), show placeholder
-            self.image_label.configure(image=self.story_image_ctk, text="")  # Show placeholder
-            self.image_label.image = self.story_image_ctk  # Keep placeholder reference
+            self.image_label.configure(image=self.story_image_ctk, text="")
+            self.image_label.image = self.story_image_ctk
 
-    def _update_ui(self, story_turn: InteractiveTurnOutput, image_bytes: bytes | None):
-        """Updates the GUI elements with the new story content and image."""
+    def _update_ui(self, story_turn: InteractiveTurnOutput, image_bytes: bytes | None, audio_path: str | None):
+        """Updates the GUI elements with text, image, and plays audio."""
         print(f"Updating UI for scene...")
-        # Update Text
         self.story_textbox.configure(state="normal")
         self.story_textbox.delete("1.0", "end")
         self.story_textbox.insert("1.0", story_turn.scene_text)
         self.story_textbox.configure(state="disabled")
 
-        # Update Image (using the new method)
         self._display_image_bytes(image_bytes)
 
-        # Update Buttons
+        self._play_audio(audio_path)
+
         if story_turn.decisions:
             self.button_option_1.configure(text=story_turn.decisions.option1, state="normal")
             self.button_option_2.configure(text=story_turn.decisions.option2, state="normal")
         else:
-            # Story ended
             self.button_option_1.configure(text="The End", state="disabled")
             self.button_option_2.configure(text="Start Over?", state="normal", command=self.start_story)
 
