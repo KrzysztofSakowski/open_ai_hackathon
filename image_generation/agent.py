@@ -32,14 +32,14 @@ async def _generate_image(
             model="gpt-image-1",
             prompt=prompt,
             n=1,
-            quality="medium",
+            quality=image_generation_prompt.quality,
         )
     else:
         result = await openai_client.images.edit(
             model="gpt-image-1",
             prompt=prompt,
             n=1,
-            quality="medium",
+            quality=image_generation_prompt.quality,
             image=[open(base_image_path, "rb") for base_image_path in image_generation_prompt.base_images],
         )
     image_base64 = result.data[0].b64_json

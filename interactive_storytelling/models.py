@@ -44,6 +44,7 @@ class InteractiveTurnOutput(BaseModel):
     """
 
     scene_text: str
+    description_of_the_scene_for_image_generation: str
     decisions: InteractiveTurnDecisions | None
 
 
