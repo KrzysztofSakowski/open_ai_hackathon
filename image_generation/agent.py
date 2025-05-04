@@ -40,7 +40,7 @@ async def _generate_image(
             prompt=prompt,
             n=1,
             quality="medium",
-            image=image_generation_prompt.base_images,
+            image=[open(base_image_path, "rb") for base_image_path in image_generation_prompt.base_images],
         )
     image_base64 = result.data[0].b64_json
     image_bytes = base64.b64decode(image_base64)

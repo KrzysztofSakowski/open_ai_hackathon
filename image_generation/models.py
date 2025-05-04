@@ -9,7 +9,7 @@ class ImageGenerationPrompt(BaseModel):
     e.g. the same main character in different poses, settings, etc.
     """
 
-    base_images: list[bytes]
+    base_images: list[str]  # List of base image paths
     prompt: str
 
 
