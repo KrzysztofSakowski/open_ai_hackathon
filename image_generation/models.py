@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 
@@ -11,6 +13,7 @@ class ImageGenerationPrompt(BaseModel):
 
     base_images: list[str]  # List of base image paths
     prompt: str
+    quality: Literal["low", "medium", "high"] = "medium"
 
 
 class ImageGeneratorContext(BaseModel):
