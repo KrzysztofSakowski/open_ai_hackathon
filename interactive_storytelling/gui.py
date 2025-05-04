@@ -1,14 +1,15 @@
 import asyncio
-import tkinter
-import customtkinter
-import threading
 import queue
-from PIL import Image, ImageTk  # Import PIL
+import threading
+from queue import Queue
+from typing import AsyncGenerator
+
+import customtkinter
+from PIL import Image  # Import PIL
 from dotenv import load_dotenv
 
 from interactive_storytelling.agent import run_interactive_story
-from interactive_storytelling.models import StorytellerContext, StoryMoral
-from models import StoryContinuationOutput, InteractiveTurnOutput
+from interactive_storytelling.models import StorytellerContext, StoryMoral, InteractiveTurnOutput
 
 # --- Basic Setup ---
 customtkinter.set_appearance_mode("system")  # Modes: "System" (standard), "Dark", "Light"
@@ -27,8 +28,8 @@ class StoryApp(customtkinter.CTk):
         load_dotenv()
 
         # --- Story State ---
-        self.story_generator = None
-        self.result_queue = queue.Queue()
+        self.story_generator: AsyncGenerator[InteractiveTurnOutput, str] | None = None
+        self.result_queue: Queue[InteractiveTurnOutput | Exception] = queue.Queue()
         self.story_context = StorytellerContext(  # Default context, can be made configurable
             main_topic="A curious squirrel discovering a hidden world in a park.",
             main_moral=StoryMoral(
@@ -102,12 +103,10 @@ class StoryApp(customtkinter.CTk):
 
     def _run_async_story_step(self, choice: str | None):
         """Runs the async story generator step in a separate thread."""
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         try:
-            # Get or create an event loop for this thread
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-            result = loop.run_until_complete(self.story_generator.asend(choice))
+            result: InteractiveTurnOutput = loop.run_until_complete(self.story_generator.asend(choice))
             self.result_queue.put(result)
         except Exception as e:
             # Put exception in queue to handle it in the main thread
@@ -146,14 +145,15 @@ class StoryApp(customtkinter.CTk):
                 self.button_option_1.configure(text="Start New Story?", command=self.start_story, state="normal")
                 self.button_option_2.configure(text="", state="disabled")
             else:
+                print(type(result))
                 self._update_ui(result)
         except queue.Empty:
             # If queue is empty, schedule to check again later
-            self.after(100, self._check_queue)
+            self.after(100, func=self._check_queue)
 
     def _update_ui(self, story_turn: InteractiveTurnOutput):
         """Updates the GUI elements with the new story content."""
-        print("Updating UI...")
+        print(f"Updating UI with {story_turn}...")
         self.story_textbox.configure(state="normal")  # Enable editing
         self.story_textbox.delete("1.0", "end")
         self.story_textbox.insert("1.0", story_turn.scene_text)
@@ -162,9 +162,9 @@ class StoryApp(customtkinter.CTk):
         # TODO: Update image_label with the actual generated image
         # self.image_label.configure(image=...) # Load and set the image
 
-        if story_turn.options:
-            self.button_option_1.configure(text=story_turn.options.option1, state="normal")
-            self.button_option_2.configure(text=story_turn.options.option2, state="normal")
+        if story_turn.decisions:
+            self.button_option_1.configure(text=story_turn.decisions.option1, state="normal")
+            self.button_option_2.configure(text=story_turn.decisions.option2, state="normal")
         else:
             # Story ended
             self.button_option_1.configure(text="The End", state="disabled")
