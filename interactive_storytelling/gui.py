@@ -145,7 +145,6 @@ class StoryApp(customtkinter.CTk):
                 self.button_option_1.configure(text="Start New Story?", command=self.start_story, state="normal")
                 self.button_option_2.configure(text="", state="disabled")
             else:
-                print(type(result))
                 self._update_ui(result)
         except queue.Empty:
             # If queue is empty, schedule to check again later
@@ -153,7 +152,7 @@ class StoryApp(customtkinter.CTk):
 
     def _update_ui(self, story_turn: InteractiveTurnOutput):
         """Updates the GUI elements with the new story content."""
-        print(f"Updating UI with {story_turn}...")
+        print(f"Updating UI...")
         self.story_textbox.configure(state="normal")  # Enable editing
         self.story_textbox.delete("1.0", "end")
         self.story_textbox.insert("1.0", story_turn.scene_text)
